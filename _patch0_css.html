@@ -1,0 +1,43 @@
+/* ===== 新增：怀疑 / 恐惧 / 关系网 / 状态徽标 ===== */
+#statBar .stat-sus b{color:#ff8f6b;}
+#statBar .stat-fear b{color:#c08bff;}
+.relation-panel{padding:12px 13px;border-radius:14px;border:1px solid var(--line);background:var(--panel);margin-bottom:12px;}
+.relation-panel .rp-title{font-size:12.5px;letter-spacing:3px;color:#c8a890;margin-bottom:4px;font-weight:600;}
+.relation-panel .rp-sub{font-size:10.5px;color:#5c5966;margin-bottom:10px;letter-spacing:.5px;line-height:1.5;}
+.relation-row{display:flex;align-items:center;gap:8px;padding:7px 4px;font-size:12px;border-bottom:1px dashed rgba(255,255,255,.06);}
+.relation-row:last-child{border-bottom:0;}
+.relation-row .rr-who{flex:1;color:#e8e2e6;}
+.relation-row .rr-arrow{flex:none;color:#6a6672;font-size:11px;}
+.relation-row .rr-target{flex:1;text-align:right;color:#e8a878;}
+.relation-row.unknown .rr-who,.relation-row.unknown .rr-target{color:#55525c;}
+.relation-row.unknown .rr-arrow{color:#3d3a44;}
+.slot-panel{padding:12px 13px;border-radius:14px;border:1px solid var(--line);background:var(--panel);margin-bottom:12px;}
+.slot-title{font-size:12.5px;letter-spacing:3px;color:#c8a890;margin-bottom:10px;font-weight:600;}
+.slot-row{display:flex;align-items:center;gap:10px;padding:7px 0;}
+.slot-row .sr-name{width:42px;flex:none;font-size:12px;color:#c9c6cc;}
+.slot-row .sr-dots{display:flex;gap:6px;flex:none;font-size:13px;letter-spacing:2px;}
+.slot-row .sr-dots .d-on{color:#38d67a;}
+.slot-row .sr-dots .d-off{color:#3d3a44;}
+.slot-row .sr-tip{flex:1;font-size:10.5px;color:#6a6672;text-align:right;line-height:1.4;}
+.clue-card{padding:12px 13px;border-radius:12px;background:var(--panel);border:1px solid var(--line);margin-bottom:9px;}
+.clue-card.found{border-color:rgba(232,168,120,.4);}
+.clue-card.confirmed{border-color:rgba(56,180,120,.45);background:rgba(56,160,110,.08);}
+.clue-card .cc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;}
+.clue-card .cc-name{font-size:13px;font-weight:600;}
+.clue-card .cc-tag{flex:none;font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(255,255,255,.05);color:var(--txt-dim);}
+.clue-card.found .cc-tag{color:#e8a878;}
+.clue-card.confirmed .cc-tag{color:#38d67a;}
+.clue-card .cc-src{font-size:10.5px;color:var(--txt-dim);line-height:1.6;}
+.sec-clue{font-size:11px;padding:7px 10px;border-radius:9px;background:rgba(255,255,255,.02);border:1px dashed rgba(255,255,255,.08);color:#5c5966;margin-bottom:6px;line-height:1.6;}
+.sec-clue.on{color:#c9c6cc;border-style:solid;border-color:rgba(232,168,120,.25);}
+.sec-clue.dead{color:#a87a7a;border-color:rgba(200,50,58,.3);}
+.chk-badge{font-size:9.5px;padding:1px 7px;border-radius:7px;margin-left:5px;vertical-align:middle;}
+.chk-badge.inj{color:#ff9c6b;background:rgba(224,110,47,.16);border:1px solid rgba(224,110,47,.35);}
+.chk-badge.exi{color:#c0a8ff;background:rgba(150,120,220,.16);border:1px solid rgba(150,120,220,.35);}
+.chk-badge.dead{color:#ff7a84;background:rgba(200,50,58,.16);border:1px solid rgba(200,50,58,.35);}
+.exile-card.dis{opacity:.35;cursor:not-allowed;}
+.exile-card .estatus{font-size:9.5px;color:#c0a8ff;margin-top:2px;}
+.exile-hint{font-size:11px;color:#8a8794;line-height:1.8;padding:10px 12px;border-radius:11px;background:rgba(255,255,255,.03);border:1px solid var(--line);margin-bottom:12px;}
+.acc-sum{display:flex;gap:10px;margin:0 0 16px;}
+.acc-sum > div{flex:1;padding:10px;border-radius:11px;background:var(--panel);border:1px solid var(--line);text-align:center;font-size:10.5px;color:var(--txt-dim);}
+.acc-sum b{display:block;font-size:17px;color:var(--warm-soft);margin-bottom:2px;}

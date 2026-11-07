@@ -1,0 +1,44 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>
+<iframe id="f" src="index.html" style="width:480px;height:900px;border:0"></iframe>
+<div id="log" style="font-family:monospace;white-space:pre;padding:10px;background:#111;color:#0f0;font-size:12.5px;"></div>
+<script>
+const L=(s)=>{document.getElementById('log').textContent+=s+"\n";};
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+window.onload=async()=>{
+  const f=document.getElementById('f'); const w=f.contentWindow, d=f.contentDocument;
+  await wait(1200);
+  try{
+    w.initGame(); w.showScreen('screen-chat'); w.switchPage('page-actions');
+
+    // 1) 巡夜三选一按钮
+    w.showPatrolChoice();
+    await wait(200);
+    const box=d.getElementById('chatChoices');
+    const btns=box?box.querySelectorAll('button').length:0;
+    L("巡夜三选一按钮数="+btns);
+
+    // 2) 选 A 路线
+    w.startPatrolRoute('A');
+    await wait(150);
+    L("进入VN? screen-vn active="+d.getElementById('screen-vn').classList.contains('active'));
+    L("第一句打字中="+w.isTyping()+" 文本首="+d.getElementById('vnText').textContent.slice(0,6));
+
+    // 3) 快速走完 A 路线：循环点击补全+推进，直到进入搜证(出现 vn-search) 或超时
+    let guard=0;
+    while(guard<200){
+      guard++;
+      const searching = d.querySelectorAll('.vn-search').length>0;
+      if(searching) break;
+      const activeVN=d.getElementById('screen-vn').classList.contains('active');
+      if(!activeVN) break;
+      w.vnScreenClick({target:d.getElementById('vnText')});
+      await wait(15);
+    }
+    await wait(200);
+    const searches=d.querySelectorAll('.vn-search').length;
+    L("循环点击 "+guard+" 次后: 搜证按钮数="+searches+" screen-vn active="+d.getElementById('screen-vn').classList.contains('active'));
+
+    L("=== RESULT: DONE ===");
+  }catch(e){ L("ERR: "+e.message+"\n"+e.stack); }
+};
+</script></body></html>

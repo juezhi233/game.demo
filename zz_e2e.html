@@ -1,0 +1,53 @@
+<!DOCTYPE html><html><head><meta charset="UTF-8"></head><body>
+<iframe id="f" src="index.html" style="width:480px;height:900px;border:0"></iframe>
+<div id="log" style="font-family:monospace;white-space:pre;padding:10px;background:#111;color:#0f0;font-size:12.5px;"></div>
+<script>
+const L=(s)=>{document.getElementById('log').textContent+=s+"\n";};
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
+window.onload=async()=>{
+  const f=document.getElementById('f');
+  const w=f.contentWindow, d=f.contentDocument;
+  await wait(1200);
+  try{
+    L("typeof dvnRender="+(typeof w.dvnRender));
+    L("typeof typeText="+(typeof w.typeText));
+    L("typeof playPatrol404="+(typeof w.playPatrol404));
+    L("typeof startPatrolRoute="+(typeof w.startPatrolRoute));
+    L("typeof enterBedPhone="+(typeof w.enterBedPhone));
+
+    // 直接构造 VN 进行打字测试
+    w.dvnState={night:1, queue:[
+      {who:'action', text:'这是一句用来测试的打字机旁白，应该逐字出现而不是瞬间出现。'},
+      {who:'me', text:'第二句话，也逐字显示。'}
+    ], pending:null, seq:true};
+    w.showScreen('screen-vn');
+    w.dvnRender();
+    await wait(120);
+    var t1=d.getElementById('vnText').textContent;
+    L("t=120ms 长度="+t1.length+" 打字中="+w.isTyping());
+    // 点击补全
+    w.vnScreenClick({target:d.getElementById('vnText')});
+    await wait(30);
+    var t2=d.getElementById('vnText').textContent;
+    L("补全后长度="+t2.length+" 打字中="+w.isTyping()+" 完整="+(t2==='这是一句用来测试的打字机旁白，应该逐字出现而不是瞬间出现。'));
+    // 点击推进
+    w.vnScreenClick({target:d.getElementById('vnText')});
+    await wait(120);
+    var t3=d.getElementById('vnText').textContent;
+    L("推进后第二句长度="+t3.length+" 内容=["+t3+"]");
+    w.vnScreenClick({target:d.getElementById('vnText')});
+    await wait(30);
+    L("第二句补全=["+d.getElementById('vnText').textContent+"]");
+
+    // 测试 openVNScene 也打字（模拟进入搜证）
+    w.initGame();
+    w.showScreen('screen-chat');
+    w.openVNScene(1);
+    await wait(100);
+    var ti=d.getElementById('vnText').textContent;
+    L("openVNScene 搜证 intro 长度="+ti.length+" 打字中="+w.isTyping());
+
+    L("=== RESULT: DONE ===");
+  }catch(e){ L("ERR: "+e.message+"\n"+e.stack); }
+};
+</script></body></html>

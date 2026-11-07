@@ -1,0 +1,2118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>晚祷 · 圣玛格丽特修道院</title>
+<style>
+:root{
+  --bg:#050506; --panel:#141418; --panel-2:#1a1a20;
+  --txt:#e8e2e6; --txt-dim:#8a8794;
+  --accent:#b32a33; --accent-soft:#e06a72; --glow:rgba(200,50,58,.5);
+  --line:rgba(255,255,255,.08);
+  --warm:#c86e48; --warm-soft:#e8a878;
+  --ok:#38d67a;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{margin:0;height:100%;font-family:-apple-system,"PingFang SC","Microsoft YaHei",system-ui,sans-serif;}
+body{background:#000;color:var(--txt);overflow:hidden;}
+#stage{position:fixed;inset:0;margin:0 auto;max-width:480px;
+  background:radial-gradient(circle at 50% 30%,#16161c 0%,#050506 70%);
+  overflow:hidden;box-shadow:0 0 60px rgba(0,0,0,.9);}
+.screen{position:absolute;inset:0;overflow:hidden;display:none;flex-direction:column;background:var(--bg);}
+.screen.active{display:flex;}
+.screen.full{z-index:10;}
+button{font-family:inherit;}/* 首页 */
+#screen-title{background:radial-gradient(circle at 50% 25%,#1c1013 0%,#0a0a0c 55%,#050506 100%);
+  align-items:center;justify-content:center;text-align:center;padding:40px 30px;}
+#screen-title .t-sub{font-size:11px;letter-spacing:8px;color:var(--accent-soft);margin-bottom:18px;}
+#screen-title h1{font-size:40px;letter-spacing:14px;margin:0 0 8px;font-weight:700;text-shadow:0 0 40px rgba(200,50,58,.6);}
+#screen-title .t-en{font-size:10px;letter-spacing:6px;color:var(--txt-dim);margin-bottom:40px;}
+#screen-title .t-desc{font-size:12px;line-height:2;color:#b8b4be;max-width:320px;margin-bottom:44px;}
+.title-btns{display:flex;flex-direction:column;gap:12px;width:220px;margin-top:44px;}
+.btn-start{padding:14px 20px;border-radius:12px;border:1px solid rgba(232,200,122,.5);
+  background:linear-gradient(155deg,#1f1b14,#0e0d0a);color:#e8c87a;font-size:15px;letter-spacing:6px;
+  cursor:pointer;transition:.2s;box-shadow:0 6px 20px rgba(0,0,0,.5),inset 0 1px 0 rgba(232,200,122,.15),inset 0 0 24px rgba(232,200,122,.05);}
+.btn-start:hover{transform:translateY(-2px);border-color:rgba(232,200,122,.85);box-shadow:0 8px 26px rgba(0,0,0,.6),inset 0 0 30px rgba(232,200,122,.12);}
+.btn-sub{padding:12px 20px;border-radius:12px;border:1px solid rgba(232,200,122,.28);
+  background:linear-gradient(155deg,#17140f,#0b0a08);color:#c8b488;font-size:13.5px;letter-spacing:4px;
+  cursor:pointer;transition:.2s;box-shadow:inset 0 1px 0 rgba(232,200,122,.08);}
+.btn-sub:hover{transform:translateY(-1px);border-color:rgba(232,200,122,.6);color:#e8c87a;background:linear-gradient(155deg,#221d15,#0e0d0a);}
+/* 结局一览弹窗 */
+#endingsMask{position:fixed;inset:0;z-index:80;background:rgba(6,6,9,.85);backdrop-filter:blur(8px);
+  display:none;align-items:center;justify-content:center;padding:26px;}
+#endingsMask.show{display:flex;}
+.endings-box{width:100%;max-width:360px;max-height:82vh;overflow-y:auto;background:#141210;
+  border:1px solid rgba(232,200,122,.3);border-radius:16px;padding:22px 20px 24px;
+  box-shadow:0 20px 60px rgba(0,0,0,.7);}
+.endings-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.endings-head .eh-title{font-size:16px;letter-spacing:4px;color:#e8c87a;font-weight:600;}
+.endings-head .eh-close{background:rgba(255,255,255,.08);border:0;color:#e8e2e6;width:30px;height:30px;border-radius:50%;font-size:16px;cursor:pointer;}
+.endings-head .eh-close:hover{background:rgba(255,255,255,.16);}
+.endings-count{font-size:11px;color:#8a846f;letter-spacing:1px;margin-bottom:16px;}
+.endings-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+.ending-cell{aspect-ratio:1;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;background:#0e0d0a;border:1px solid rgba(232,200,122,.14);font-size:10px;text-align:center;padding:6px;transition:.2s;}
+.ending-cell .ec-q{font-size:24px;font-weight:300;color:#3d3a30;line-height:1;}
+.ending-cell.unlocked{border-color:rgba(232,200,122,.7);background:linear-gradient(155deg,#221d15,#0e0d0a);
+  box-shadow:inset 0 0 22px rgba(232,200,122,.12),0 0 18px rgba(232,200,122,.15);cursor:pointer;}
+.ending-cell.unlocked .ec-q{font-size:22px;filter:drop-shadow(0 0 8px rgba(232,200,122,.6));}
+.ending-cell.unlocked .ec-name{color:#e8c87a;font-size:10.5px;line-height:1.3;letter-spacing:.5px;font-weight:600;}
+.ending-cell.locked .ec-name{color:#4a4638;font-size:9px;letter-spacing:1px;}
+.ending-cell.locked .ec-num{color:#33302a;font-size:9px;}
+/* 顶栏/条 */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 10px;
+  border-bottom:1px solid var(--line);background:rgba(10,10,12,.75);backdrop-filter:blur(14px);flex:none;}
+.topbar .tb-title{font-size:14px;letter-spacing:3px;font-weight:600;}
+.topbar .tb-sub{font-size:10px;letter-spacing:2px;color:var(--txt-dim);}
+#screen-chat{background:radial-gradient(circle at 50% 0%,#1a1013 0%,#0b0b0e 55%,#060607 100%);}
+#statBar{display:flex;align-items:center;gap:16px;padding:8px 18px;font-size:11px;
+  color:var(--txt-dim);border-bottom:1px solid var(--line);background:rgba(12,12,15,.6);flex:none;}
+#statBar b{color:var(--warm-soft);font-weight:600;}
+#statBar .stat-ap b{color:var(--ok);}
+#statBar .sep{width:1px;height:12px;background:rgba(255,255,255,.12);}
+/* 底部导航 */
+#nav{display:flex;border-top:1px solid var(--line);background:rgba(12,12,15,.94);
+  backdrop-filter:blur(16px);flex:none;}
+.nav-btn{flex:1;border:0;background:transparent;cursor:pointer;padding:10px 0 9px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--txt-dim);
+  font-size:10px;letter-spacing:1px;position:relative;transition:.16s;}
+.nav-btn svg{width:21px;height:21px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;}
+.nav-btn.on{color:var(--accent-soft);}
+.nav-btn.on::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:26px;height:2px;border-radius:2px;background:var(--accent-soft);box-shadow:0 0 10px var(--accent-soft);}
+.nav-btn .nav-dot{position:absolute;top:8px;right:calc(50% - 16px);width:7px;height:7px;border-radius:50%;
+  background:#e0454e;box-shadow:0 0 8px rgba(224,69,78,.9);display:none;}
+.nav-btn.has-dot .nav-dot{display:block;}
+/* 页面容器 */
+#pageWrap{position:relative;flex:1;overflow:hidden;}
+.page{position:absolute;inset:0;display:none;flex-direction:column;background:var(--bg);}
+.page.active{display:flex;}
+.page-head{padding:16px 18px 4px;flex:none;}
+.page-head h2{margin:0;font-size:20px;letter-spacing:6px;font-weight:700;}
+.page-head span{font-size:9px;letter-spacing:4px;color:var(--txt-dim);}
+.page-scroll{flex:1;overflow-y:auto;padding:14px 18px 30px;}
+.page-scroll::-webkit-scrollbar{width:5px;}
+.page-scroll::-webkit-scrollbar-thumb{background:#2a2a32;border-radius:9px;}/* 讯息列表 */
+.msg-item{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;
+  background:rgba(255,255,255,.035);margin-bottom:9px;cursor:pointer;transition:.16s;border:1px solid transparent;}
+.msg-item:hover{background:rgba(255,255,255,.07);border-color:rgba(210,130,90,.25);}
+.mi-ava{width:46px;height:46px;border-radius:13px;object-fit:cover;flex-shrink:0;background:rgba(255,255,255,.08);border:1px solid var(--line);}
+.mi-ava.group{display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#5a3a3a,#3a2a3a);}
+.mi-body{flex:1;min-width:0;}
+.mi-name{font-size:14px;font-weight:600;margin-bottom:3px;}
+.mi-last{font-size:11.5px;color:var(--txt-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mi-dot{flex-shrink:0;min-width:18px;height:18px;border-radius:9px;background:#d64550;color:#fff;
+  font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 5px;}
+/* 聊天对话 */
+.chat-head{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);background:rgba(12,12,15,.9);flex:none;}
+.chat-back{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:0;color:var(--txt);font-size:16px;cursor:pointer;flex:none;}
+.chat-back:hover{background:rgba(255,255,255,.16);}
+.chat-head .ch-name{font-size:14px;font-weight:600;}
+.chat-head .ch-sub{font-size:10px;color:var(--txt-dim);}
+.chat-body{flex:1;overflow-y:auto;padding:16px 14px;display:flex;flex-direction:column;gap:12px;}
+.chat-body::-webkit-scrollbar{width:5px;}
+.chat-body::-webkit-scrollbar-thumb{background:#2a2a32;border-radius:9px;}
+.msg{display:flex;gap:8px;max-width:86%;}
+.msg.left{align-self:flex-start;}
+.msg.right{align-self:flex-end;flex-direction:row-reverse;}
+.msg .ava{width:34px;height:34px;border-radius:10px;object-fit:cover;flex:none;background:#1a1a20;border:1px solid var(--line);}
+.msg .bubble{padding:9px 13px;border-radius:13px;font-size:13.5px;line-height:1.6;word-break:break-word;}
+.msg.left .bubble{background:var(--panel-2);border:1px solid var(--line);border-top-left-radius:4px;}
+.msg.right .bubble{background:linear-gradient(145deg,#a3232b,#7d1a20);border-top-right-radius:4px;}
+.msg .mname{font-size:10px;color:var(--txt-dim);margin-bottom:3px;}
+.msg.sys{align-self:center;max-width:90%;}
+.msg.sys .bubble{background:rgba(200,50,58,.08);font-size:11.5px;color:#c9a;text-align:center;border:1px dashed rgba(200,50,58,.25);}
+.msg.drawing .bubble{padding:6px;}
+.msg.drawing img{max-width:180px;border-radius:10px;display:block;}
+/* 触发区 */
+.chat-input{flex:none;padding:10px 14px 12px;border-top:1px solid var(--line);background:rgba(12,12,15,.94);display:flex;flex-direction:column;gap:8px;}
+.trigger-list{display:flex;flex-direction:column;gap:7px;}
+.trg{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 13px;
+  border-radius:11px;border:1px solid var(--line);background:var(--panel-2);cursor:pointer;transition:.15s;}
+.trg:hover{border-color:rgba(210,130,90,.5);background:rgba(210,130,90,.08);}
+.trg .trg-txt{font-size:12.5px;line-height:1.4;}
+.trg .cost{flex:none;font-size:10px;color:var(--warm-soft);background:rgba(196,110,72,.18);padding:2px 8px;border-radius:9px;}
+.trg.free .cost{background:rgba(56,214,122,.14);color:var(--ok);}
+.trg:disabled{opacity:.4;cursor:not-allowed;}
+.chat-note{text-align:center;font-size:11px;color:#e0a05a;padding:6px;}
+/* 选项 */
+.choices{display:flex;flex-direction:column;gap:8px;}
+.choice{padding:12px 15px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);
+  color:var(--txt);font-size:13px;text-align:left;line-height:1.5;cursor:pointer;transition:.15s;}
+.choice:hover{background:rgba(179,42,51,.3);border-color:rgba(255,140,146,.5);transform:translateX(2px);}
+.choice .ctag{font-size:10px;color:var(--warm-soft);letter-spacing:1px;margin-left:6px;}
+/* 提示条 / toast */
+#hintBar{position:absolute;left:50%;bottom:74px;transform:translateX(-50%) translateY(20px);
+  max-width:calc(100% - 40px);padding:11px 18px;border-radius:12px;background:rgba(196,110,72,.92);
+  color:#fff2e8;font-size:12.5px;line-height:1.5;text-align:center;opacity:0;pointer-events:none;transition:.28s;z-index:30;box-shadow:0 6px 24px rgba(0,0,0,.5);}
+#hintBar.show{opacity:1;transform:translateX(-50%) translateY(0);pointer-events:auto;}
+#hintBar.clickable{cursor:pointer;}
+#hintBar.clickable:hover{background:rgba(210,125,85,.98);}
+#toast{position:absolute;left:50%;top:64px;transform:translateX(-50%) translateY(-10px);
+  padding:9px 18px;border-radius:10px;background:rgba(20,20,24,.95);border:1px solid var(--line);
+  color:#e8e2e6;font-size:12px;opacity:0;pointer-events:none;transition:.25s;z-index:60;white-space:nowrap;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}/* 行动页 */
+.act-section-title{display:flex;align-items:baseline;gap:10px;font-size:13px;letter-spacing:3px;color:#c8a890;margin:4px 2px 14px;font-weight:600;}
+.act-section-title .ast-hint{font-size:10px;letter-spacing:1px;color:#5c5966;font-weight:400;}
+.scene-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:26px;}
+.scene-card{position:relative;aspect-ratio:1/1;border-radius:22px;padding:14px;display:flex;flex-direction:column;justify-content:space-between;overflow:hidden;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);transition:.16s;}
+.scene-card .sc-name{font-size:15px;line-height:1.35;color:#e8e2e6;letter-spacing:1px;font-weight:500;padding-right:34px;}
+.scene-card .sc-sub{font-size:10.5px;color:#8a8794;letter-spacing:.5px;}
+.scene-card .sc-icon{position:absolute;bottom:10px;right:10px;width:34px;height:34px;opacity:.25;fill:none;stroke:#e8e2e6;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;}
+.sc-cost{position:absolute;top:12px;right:12px;font-size:11px;color:var(--warm-soft);background:rgba(196,110,72,.2);padding:2px 8px;border-radius:10px;letter-spacing:.5px;}
+.sc-cost.free{color:var(--ok);background:rgba(120,160,130,.16);}
+.scene-card.locked{opacity:.4;background:rgba(255,255,255,.02);border-style:dashed;}
+.scene-card.locked .sc-name{font-size:34px;color:#55525c;text-align:center;margin:auto;padding:0;}
+.scene-card.locked .sc-sub{display:none;}
+.scene-card.current{border-color:rgba(220,150,110,.6);box-shadow:0 0 20px rgba(200,120,80,.25);cursor:pointer;}
+.scene-card.current:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(200,120,80,.4);}
+.scene-card.available{border-color:rgba(255,255,255,.14);cursor:pointer;}
+.scene-card.available:hover{transform:translateY(-2px);}
+.scene-card.done{opacity:.5;border-color:rgba(120,160,130,.2);}
+.scene-card.done .sc-name{text-decoration:line-through;text-decoration-color:rgba(150,200,160,.5);}
+.scene-card.done .sc-cost{color:#7fbf9a;background:rgba(120,160,130,.14);}
+.scene-card.visit{border-color:rgba(150,120,180,.3);cursor:pointer;}
+.scene-card.visit:hover{transform:translateY(-2px);box-shadow:0 0 18px rgba(150,120,180,.3);}
+.scene-card.visit .sc-dot{position:absolute;top:12px;left:12px;width:9px;height:9px;border-radius:50%;background:#c86ad0;display:none;box-shadow:0 0 10px rgba(200,106,208,.8);}
+.scene-card.visit.lit .sc-dot{display:block;}
+/* 证据板 */
+.ev-board{display:flex;flex-direction:column;gap:10px;}
+.ev-row{display:flex;gap:10px;padding:11px 13px;border-radius:12px;background:var(--panel);border:1px solid var(--line);}
+.ev-row.held{border-color:rgba(56,180,120,.4);background:rgba(56,160,110,.07);}
+.ev-row .ev-id{flex:none;font-size:10px;color:var(--txt-dim);width:32px;font-weight:600;}
+.ev-row.held .ev-id{color:var(--ok);}
+.ev-row .ev-body{flex:1;}
+.ev-row .ev-name{font-size:13px;margin-bottom:2px;}
+.ev-row .ev-src{font-size:10.5px;color:var(--txt-dim);}
+.ev-row .ev-chain{flex:none;font-size:10px;padding:2px 8px;border-radius:8px;align-self:flex-start;}
+.ev-chain.presence{background:rgba(120,170,255,.16);color:#8fb8ff;}
+.ev-chain.motive{background:rgba(255,150,90,.16);color:#ffb27a;}
+.ev-chain.chance{background:rgba(180,140,255,.16);color:#c0a8ff;}
+.ev-chain.na{background:rgba(255,255,255,.05);color:var(--txt-dim);}
+/* 放逐页 */
+.exile-mode{display:flex;gap:8px;margin-bottom:14px;}
+.exile-mode button{flex:1;padding:11px;border-radius:11px;border:1px solid var(--line);background:var(--panel);color:var(--txt-dim);font-size:13px;cursor:pointer;transition:.15s;}
+.exile-mode button.on{background:rgba(200,50,58,.7);color:#fff;border-color:transparent;}
+.exile-list{display:flex;flex-direction:column;gap:9px;}
+.exile-card{display:flex;align-items:center;gap:12px;padding:11px 13px;border-radius:13px;background:var(--panel);border:1px solid var(--line);cursor:pointer;transition:.15s;}
+.exile-card:hover{border-color:rgba(200,50,58,.4);}
+.exile-card.sel{border-color:rgba(200,50,58,.8);background:rgba(200,50,58,.12);box-shadow:0 0 16px rgba(200,50,58,.25);}
+.exile-card .eava{width:44px;height:44px;border-radius:12px;object-fit:cover;flex:none;background:#1a1a20;border:1px solid var(--line);}
+.exile-card .ename{font-size:13.5px;font-weight:600;}
+.exile-card .erole{font-size:11px;color:var(--txt-dim);}
+.exile-card.locked{opacity:.4;cursor:not-allowed;}
+.exile-go{width:100%;padding:14px;margin-top:16px;border-radius:13px;border:0;background:linear-gradient(145deg,var(--accent-soft),#8f1c23);color:#fff;font-size:15px;letter-spacing:4px;cursor:pointer;box-shadow:0 0 24px rgba(200,50,58,.35);}
+.exile-go:disabled{opacity:.35;cursor:not-allowed;box-shadow:none;}
+/* 开场演出 */
+#screen-intro{background:#000;overflow:hidden;}
+#screen-intro .intro-bg{position:absolute;inset:0;background-size:cover;background-position:center;
+  opacity:0;transition:opacity 1.4s ease;filter:brightness(.62) saturate(.9);}
+#screen-intro .intro-bg::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(circle at 50% 35%,transparent 30%,rgba(0,0,0,.6) 100%),linear-gradient(to top,rgba(0,0,0,.85),transparent 45%);}
+#screen-intro .intro-bg.show{opacity:1;}
+#screen-intro .intro-day{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  font-size:26px;letter-spacing:16px;color:#d8d2c6;opacity:0;font-weight:300;
+  transition:opacity 1s ease;text-shadow:0 0 30px rgba(0,0,0,.8);z-index:5;padding-left:16px;}
+#screen-intro .intro-day.show{opacity:1;}
+#screen-intro .intro-day.hide{opacity:0;transition:opacity .8s ease;}
+/* 立绘：右侧，底部对齐 */
+/* 立绘：贴在对话框内右下角，底边与对话框内底边齐平，仅有许赎说话时出现；尺寸很小 */
+#screen-intro .intro-portrait{position:absolute;right:-1px;bottom:-1px;z-index:7;
+  width:122px;height:224px;opacity:0;transform:translateX(10px);
+  transition:opacity .7s ease,transform .7s ease;display:flex;align-items:flex-end;justify-content:flex-end;}
+#screen-intro .intro-portrait.show{opacity:1;transform:translateX(0);}
+#screen-intro .intro-portrait img{max-width:100%;max-height:100%;display:block;
+  filter:drop-shadow(0 3px 12px rgba(0,0,0,.8));}
+/* 对话框（四角直角；立绘右下角贴合边框） */
+#screen-intro .intro-dialog{position:absolute;left:16px;right:16px;bottom:26px;z-index:6;
+  background:rgba(12,12,16,.82);backdrop-filter:blur(16px) saturate(1.2);
+  border:1px solid rgba(232,200,122,.3);border-radius:0;padding:16px 18px 14px;
+  opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s ease;
+  box-shadow:0 14px 40px rgba(0,0,0,.6),inset 0 0 24px rgba(232,200,122,.04);}
+#screen-intro .intro-dialog.show{opacity:1;transform:translateY(0);}
+#screen-intro .intro-name{position:absolute;top:-15px;left:16px;padding:3px 16px;border-radius:10px;
+  background:linear-gradient(150deg,#b8902f,#7d5f1a);border:1px solid rgba(255,235,180,.5);
+  color:#fff6e0;font-size:13.5px;letter-spacing:2px;font-weight:600;
+  box-shadow:0 4px 14px rgba(0,0,0,.5),0 0 16px rgba(200,160,60,.35);}
+#screen-intro .intro-text{font-size:14.5px;line-height:2;color:#ece7dc;min-height:60px;margin-top:8px;letter-spacing:.5px;}
+/* 有立绘时：给文字右侧留出立绘空间，文字不进入立绘区域 */
+#screen-intro .intro-dialog.has-portrait .intro-text{padding-right:145px;}
+/* 开场选项：屏幕正中的选项卡片 */
+#screen-intro .intro-choices{position:absolute;left:50%;top:50%;transform:translate(-50%,-46%);
+  z-index:25;width:min(78%,320px);display:none;flex-direction:column;gap:14px;
+  opacity:0;transition:opacity .35s ease,transform .35s ease;pointer-events:none;}
+#screen-intro .intro-choices.show{display:flex;opacity:1;transform:translate(-50%,-50%);pointer-events:auto;}
+#screen-intro .intro-choice{padding:16px 20px;border-radius:12px;text-align:center;cursor:pointer;
+  background:linear-gradient(155deg,rgba(28,24,18,.94),rgba(12,11,9,.94));
+  border:1px solid rgba(232,200,122,.4);color:#ece7dc;
+  font-size:15px;line-height:1.5;letter-spacing:2px;transition:.18s;backdrop-filter:blur(8px);
+  box-shadow:0 8px 26px rgba(0,0,0,.5),inset 0 0 24px rgba(232,200,122,.05);}
+#screen-intro .intro-choice:hover{background:linear-gradient(155deg,rgba(40,34,24,.96),rgba(16,14,10,.96));
+  border-color:rgba(232,200,122,.85);color:#fff;transform:translateY(-2px);
+  box-shadow:0 10px 30px rgba(0,0,0,.6),inset 0 0 28px rgba(232,200,122,.12);}
+#screen-intro .intro-choice .ic-num{color:#e8c87a;font-weight:600;margin-right:10px;}
+/* 走路抖动：缓慢、轻微的上下起伏，两下 */
+#screen-intro.shake{animation:introShake 1.2s ease-in-out;}
+@keyframes introShake{
+  0%{transform:translate(0,0);}
+  25%{transform:translate(0,-3px);}
+  50%{transform:translate(0,0);}
+  75%{transform:translate(0,-3px);}
+  100%{transform:translate(0,0);}
+}
+/* 短暂黑屏遮罩 */
+#introBlack{position:absolute;inset:0;z-index:20;background:#000;opacity:0;pointer-events:none;transition:opacity .35s ease;}
+#introBlack.on{opacity:1;}
+
+/* 手机桌面主页 */
+#page-home{background:radial-gradient(circle at 50% 12%,#241820 0%,#14121a 45%,#0a0a0e 100%);}
+.ph-top{flex:none;text-align:center;padding:54px 20px 6px;}
+.ph-clock{font-size:64px;font-weight:200;letter-spacing:1px;line-height:1;color:#f4efe6;
+  text-shadow:0 2px 30px rgba(0,0,0,.6);font-variant-numeric:tabular-nums;}
+.ph-date{font-size:12px;color:#9a9382;margin-top:10px;letter-spacing:2px;}
+.ph-apps{flex:1;overflow-y:auto;padding:0 26px 0;display:flex;flex-direction:column;}
+.ph-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:30px 16px;width:100%;margin-top:auto;margin-bottom:22vh;}
+.ph-app{display:flex;flex-direction:column;align-items:center;gap:9px;cursor:pointer;background:none;border:0;padding:0;}
+.ph-app .app-ic{width:62px;height:62px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(160deg,#1c1a16 0%,#0d0d0b 100%);
+  border:1px solid rgba(232,200,122,.32);
+  box-shadow:0 6px 16px rgba(0,0,0,.55),inset 0 1px 0 rgba(232,200,122,.14),inset 0 0 22px rgba(232,200,122,.05);
+  transition:.15s;position:relative;}
+.ph-app:hover .app-ic{transform:translateY(-3px) scale(1.04);border-color:rgba(232,200,122,.6);box-shadow:0 8px 22px rgba(0,0,0,.6),inset 0 0 24px rgba(232,200,122,.1);}
+.ph-app:active .app-ic{transform:scale(.95);}
+.ph-app .app-ic svg{width:29px;height:29px;fill:none;stroke:#e8c87a;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px rgba(232,200,122,.35));}
+.ph-app .app-nm{font-size:11.5px;color:#e6e1d6;letter-spacing:.5px;}
+.ph-app .app-badge{position:absolute;top:-4px;right:-4px;min-width:18px;height:18px;border-radius:9px;background:linear-gradient(160deg,#e0902f,#b5761c);
+  color:#1a1408;font-weight:700;font-size:10px;display:flex;align-items:center;justify-content:center;padding:0 5px;border:2px solid #14121a;box-shadow:0 0 8px rgba(224,144,47,.7);}
+/* 图标统一黑金，仅靠 svg 描边区分，不再使用彩色底 */
+.ph-notice{margin:0 20px 4px;padding:9px 13px;border-radius:12px;background:rgba(200,50,58,.12);
+  border:1px solid rgba(200,50,58,.3);font-size:11.5px;color:#e7c2c6;line-height:1.5;display:flex;gap:8px;align-items:flex-start;}
+.ph-notice b{color:#ff9aa2;}
+.app-screen{position:absolute;inset:0;z-index:40;display:none;flex-direction:column;background:#0a0a0e;}
+.app-screen.active{display:flex;animation:fadeUp .28s both;}
+.app-head{flex:none;display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);background:rgba(20,20,24,.95);backdrop-filter:blur(12px);}
+.app-head .app-back{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);border:0;color:#e8e2e6;font-size:16px;cursor:pointer;flex:none;}
+.app-head .app-title{font-size:15px;font-weight:600;letter-spacing:1px;}
+.app-body{flex:1;overflow-y:auto;padding:16px;}
+.app-body::-webkit-scrollbar{width:5px;}
+.app-body::-webkit-scrollbar-thumb{background:#2a2a32;border-radius:9px;}
+.ios-notes{display:flex;flex-direction:column;gap:10px;}
+.ios-note{background:#141418;border-radius:12px;padding:12px 14px;border:1px solid var(--line);cursor:pointer;transition:.15s;}
+.ios-note:hover{background:#1b1b22;}
+.ios-note .n-title{font-size:14px;font-weight:600;color:#f0ecf2;margin-bottom:4px;}
+.ios-note .n-excerpt{font-size:12px;color:#8a8794;line-height:1.5;max-height:36px;overflow:hidden;}
+.ios-note .n-meta{font-size:10.5px;color:#5c5966;margin-top:6px;}
+.note-detail .nd-title{font-size:19px;font-weight:700;color:#f0ecf2;margin-bottom:4px;}
+.note-detail .nd-meta{font-size:11px;color:#5c5966;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line);}
+.note-detail .nd-body{font-size:13.5px;line-height:2;color:#c9c6cc;white-space:pre-wrap;}
+.album-empty{text-align:center;padding:60px 20px;color:#5c5966;}
+.album-empty .ae-ic{font-size:44px;opacity:.4;margin-bottom:14px;}
+.album-empty .ae-txt{font-size:13px;line-height:1.8;}
+.phone-dial{display:flex;flex-direction:column;align-items:center;padding:10px 0;}
+.phone-num{font-size:26px;letter-spacing:3px;color:#f0ecf2;min-height:40px;margin-bottom:8px;font-variant-numeric:tabular-nums;}
+.phone-cap{font-size:11.5px;color:#e0a05a;margin-bottom:18px;text-align:center;line-height:1.6;}
+.dialpad{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;width:100%;max-width:260px;}
+.dial-btn{aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid var(--line);
+  color:#e8e2e6;font-size:22px;font-weight:300;cursor:not-allowed;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:.5;}
+.dial-btn small{font-size:8px;color:#8a8794;letter-spacing:1px;margin-top:1px;}
+.phone-nosignal{display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;color:#e0a05a;
+  margin:0 0 14px;padding:8px;border-radius:9px;background:rgba(196,110,72,.12);border:1px solid rgba(196,110,72,.25);}
+.app-linkmsg{text-align:center;padding:40px 20px;color:#8a8794;font-size:13px;line-height:1.8;}
+.app-linkmsg button{margin-top:18px;padding:11px 28px;border-radius:11px;border:1px solid rgba(232,200,122,.4);background:linear-gradient(145deg,#1c1a16,#0d0d0b);color:#e8c87a;font-size:13px;letter-spacing:2px;cursor:pointer;}
+.wallet-card{margin:6px 0 20px;padding:22px 20px;border-radius:18px;color:#fff;
+  background:linear-gradient(150deg,#b32a33,#6e1519);box-shadow:0 12px 34px rgba(150,30,40,.4);position:relative;overflow:hidden;}
+.wallet-card .w-label{font-size:11px;letter-spacing:2px;opacity:.85;}
+.wallet-card .w-bal{font-size:40px;font-weight:300;letter-spacing:1px;margin-top:8px;font-variant-numeric:tabular-nums;}
+.wallet-card .w-bal small{font-size:16px;opacity:.8;margin-left:4px;}
+.wallet-card .w-sub{font-size:10.5px;opacity:.7;margin-top:6px;letter-spacing:1px;}
+.wallet-rows{display:flex;flex-direction:column;gap:9px;}
+.wallet-row{display:flex;justify-content:space-between;align-items:center;padding:13px 15px;border-radius:12px;background:#141418;border:1px solid var(--line);font-size:13px;}
+.wallet-row .wr-l{color:#c9c6cc;}
+.wallet-row .wr-r{color:#8a8794;font-size:12px;}
+.set-group{margin-bottom:16px;}
+.set-group .sg-title{font-size:11px;letter-spacing:2px;color:#5c5966;margin:0 4px 8px;}
+.set-item{display:flex;justify-content:space-between;align-items:center;padding:13px 15px;background:#141418;border:1px solid var(--line);border-bottom:0;font-size:13.5px;color:#e8e2e6;}
+.set-item:first-of-type{border-radius:12px 12px 0 0;}
+.set-item:last-of-type{border-radius:0 0 12px 12px;border-bottom:1px solid var(--line);}
+.set-item .si-v{color:#8a8794;font-size:12.5px;}
+/* 结算页 */
+.result-hero{text-align:center;padding:30px 20px 16px;background:radial-gradient(circle at 50% 0%,rgba(200,50,58,.16),transparent 70%);}
+.result-hero .rnight{font-size:11px;letter-spacing:6px;color:var(--accent-soft);margin-bottom:14px;}
+.result-hero .rava{width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid rgba(200,50,58,.4);background:#1a1a20;margin-bottom:10px;box-shadow:0 0 30px rgba(200,50,58,.4);}
+.result-hero .rname{font-size:18px;letter-spacing:2px;font-weight:600;}
+.result-hero .rsub{font-size:12px;color:var(--txt-dim);margin-top:6px;}
+.result-strip{display:flex;gap:10px;padding:0 18px;margin:14px 0;}
+.result-strip > div{flex:1;padding:11px;border-radius:12px;background:var(--panel);border:1px solid var(--line);text-align:center;font-size:11px;color:var(--txt-dim);}
+.result-strip b{display:block;font-size:18px;color:var(--warm-soft);margin-bottom:3px;}
+.result-section{padding:0 18px;margin-bottom:16px;}
+.result-section h4{font-size:12px;letter-spacing:3px;color:#c8a890;margin:0 0 12px;display:flex;align-items:center;gap:10px;}
+.result-section h4::after{content:"";flex:1;height:1px;background:var(--line);}
+.result-btn{width:100%;padding:14px;border-radius:13px;border:0;background:linear-gradient(145deg,var(--accent-soft),#8f1c23);color:#fff;font-size:14px;letter-spacing:4px;cursor:pointer;}/* 弹窗 */
+#modalMask{position:fixed;inset:0;z-index:2000;background:rgba(4,4,6,.78);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:24px;max-width:480px;margin:0 auto;}
+#modalMask.show{display:flex;animation:fadeIn .3s both;}
+.modal{width:100%;max-width:360px;border-radius:18px;overflow:hidden;background:linear-gradient(165deg,#17161b,#0d0d10);border:1px solid rgba(200,50,58,.35);box-shadow:0 20px 70px rgba(0,0,0,.8),0 0 40px rgba(200,50,58,.15);animation:fadeUp .4s both;max-height:80vh;display:flex;flex-direction:column;}
+.modal .mhead{padding:22px 20px 16px;text-align:center;position:relative;background:radial-gradient(circle at 50% 0%,rgba(200,50,58,.2),transparent 75%);border-bottom:1px solid var(--line);}
+.modal .mclose{position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.08);border:0;color:#c9c6cc;font-size:18px;line-height:1;cursor:pointer;}
+.modal .mclose:hover{background:rgba(255,255,255,.16);}
+.modal .mhead .mtag{font-size:9.5px;letter-spacing:4px;color:var(--accent-soft);margin-bottom:8px;}
+.modal .mhead h3{margin:0;font-size:19px;letter-spacing:3px;font-weight:600;}
+.modal .mbody{padding:18px 20px;font-size:12.5px;line-height:1.85;color:#c9c6cc;overflow-y:auto;}
+.modal .mbody p{margin:6px 0;line-height:1.7;color:#d8d4dc;font-size:13px;}
+.modal .mbody .lv{padding:9px 12px;border-radius:9px;background:var(--panel);border:1px solid var(--line);margin-bottom:8px;display:flex;justify-content:space-between;font-size:11.5px;}
+.modal .mbody .lv b{color:var(--accent-soft);}
+.modal .mfoot{padding:0 20px 20px;display:flex;gap:9px;}
+.modal .mfoot button{flex:1;padding:11px;border-radius:11px;border:1px solid var(--line);background:var(--panel-2);color:var(--txt);font-size:13px;cursor:pointer;transition:.15s;}
+.modal .mfoot button.pri{background:linear-gradient(145deg,var(--accent-soft),#8f1c23);border:0;color:#fff;}
+.modal .mfoot button:hover{transform:translateY(-1px);}
+/* 告解便签 */
+.note{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:12px;padding:12px 14px;}
+.note p{margin:0 0 8px;font-size:13px;line-height:1.7;color:#ddd8e0;}
+.note .foot{display:flex;justify-content:space-between;font-size:10px;color:var(--txt-dim);}
+.note .heart{color:#c86ad0;}
+/* VN */
+#screen-vn{background:#050506;}
+#screen-vn .vn-bg{position:absolute;inset:0;z-index:0;background-size:cover;background-position:center;filter:brightness(.72) saturate(.92);transition:background .6s;}
+#screen-vn .vn-bg::after{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 40%,transparent 40%,rgba(0,0,0,.55) 100%),linear-gradient(to top,rgba(0,0,0,.85),transparent 55%);}
+.vn-topbar{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;padding:16px 18px;background:linear-gradient(to bottom,rgba(0,0,0,.6),transparent);}
+.vn-topbar .chapter-name{font-size:13px;letter-spacing:2px;display:flex;align-items:center;gap:9px;}
+.vn-topbar .chapter-name::before{content:"";width:18px;height:1px;background:var(--accent-soft);}
+.vn-menu{border:1px solid rgba(255,255,255,.18);background:rgba(15,15,18,.55);color:#d8d5da;font-size:11px;padding:5px 12px;border-radius:8px;cursor:pointer;}
+.vn-menu:hover{background:rgba(200,50,58,.35);border-color:var(--accent-soft);color:#fff;}
+.vn-stage{position:relative;z-index:2;flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding:0 18px 8px;min-height:0;}
+.vn-cg{position:absolute;inset:0;z-index:1;background-size:cover;background-position:center;opacity:0;transition:opacity .5s;filter:brightness(.8);}
+.vn-cg.show{opacity:1;}
+.vn-cg::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.9),transparent 50%);}
+.vn-dialog{position:relative;z-index:2;background:rgba(12,12,16,.72);backdrop-filter:blur(18px) saturate(1.3);border:1px solid rgba(255,255,255,.1);border-radius:18px;padding:16px 18px;margin-bottom:10px;}
+.vn-charname{font-size:13px;color:var(--warm-soft);letter-spacing:2px;margin-bottom:8px;font-weight:600;}
+.vn-text{font-size:13.5px;line-height:1.9;color:#ece9e4;margin:0;}
+.vn-searches{display:flex;flex-direction:column;gap:8px;margin-top:14px;}
+.vn-search{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 13px;border-radius:11px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.05);color:#e8e2e6;font-size:12.5px;cursor:pointer;transition:.15s;text-align:left;}
+.vn-search:hover{background:rgba(196,110,72,.2);border-color:rgba(210,130,90,.45);transform:translateX(2px);}
+.vn-search.picked{border-color:rgba(56,180,120,.6);background:rgba(56,160,110,.15);}
+.vn-search .vs-note{font-size:10.5px;color:var(--txt-dim);margin-top:2px;}
+.vn-search .vs-ev{flex:none;font-size:9.5px;color:var(--ok);border:1px solid rgba(56,180,120,.4);padding:1px 7px;border-radius:7px;}
+.vn-choices{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.vn-choice{padding:12px 15px;border-radius:12px;border:1px solid rgba(255,255,255,.16);background:rgba(12,12,16,.6);color:#ece9e4;font-size:12.5px;line-height:1.5;text-align:left;cursor:pointer;transition:.15s;}
+.vn-choice:hover{background:rgba(179,42,51,.45);border-color:rgba(255,140,146,.6);transform:translateX(2px);}
+.vn-emote{position:absolute;top:20%;left:50%;transform:translateX(-50%) scale(.8);opacity:0;font-size:20px;padding:10px 24px;border-radius:999px;font-weight:700;letter-spacing:4px;z-index:5;transition:.35s;pointer-events:none;}
+.vn-emote.show{opacity:1;transform:translateX(-50%) scale(1);}
+.vn-emote.rebut{background:rgba(200,50,58,.9);color:#fff;box-shadow:0 0 26px rgba(200,50,58,.7);}
+.vn-emote.accept{background:rgba(56,180,120,.9);color:#fff;box-shadow:0 0 26px rgba(56,214,122,.6);}
+.vn-emote.silent{background:rgba(90,90,110,.9);color:#e2e0e8;box-shadow:0 0 22px rgba(120,120,160,.4);}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+/* 结局/指认页 */
+#screen-accuse .acc-hero{text-align:center;padding:24px 20px 10px;background:radial-gradient(circle at 50% 0%,rgba(200,50,58,.2),transparent 70%);}
+#screen-accuse .acc-hero h2{font-size:22px;letter-spacing:8px;margin:0 0 6px;}
+#screen-accuse .acc-hero p{font-size:11px;color:var(--txt-dim);margin:0;letter-spacing:2px;}
+.chain-card{padding:14px;border-radius:14px;border:1px solid var(--line);background:var(--panel);margin-bottom:12px;}
+.chain-card.complete{border-color:rgba(56,214,122,.5);background:rgba(56,214,122,.05);}
+.chain-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.chain-head .ctitle{font-size:13.5px;font-weight:600;letter-spacing:1px;}
+.chain-head .cstat{font-size:10px;padding:2px 9px;border-radius:8px;}
+.chain-head .cstat.ok{color:#38d67a;background:rgba(56,214,122,.12);border:1px solid rgba(56,214,122,.3);}
+.chain-head .cstat.no{color:var(--txt-dim);background:rgba(255,255,255,.04);border:1px solid var(--line);}
+.chain-items{display:flex;flex-direction:column;gap:6px;}
+.chain-items .ci{font-size:11.5px;color:var(--txt-dim);padding:6px 9px;border-radius:8px;background:rgba(255,255,255,.02);border:1px solid transparent;display:flex;align-items:center;gap:8px;}
+.chain-items .ci.held{color:var(--txt);border-color:rgba(255,255,255,.08);background:var(--panel-2);}
+.chain-items .ci .box{width:14px;height:14px;border-radius:4px;border:1px solid var(--line);flex:none;display:flex;align-items:center;justify-content:center;font-size:9px;}
+.chain-items .ci.held .box{background:rgba(56,214,122,.2);border-color:#38d67a;color:#38d67a;}
+</style>
+</head><body>
+<div id="stage">
+
+  <!-- 标题页 -->
+    <div class="screen active" id="screen-title">
+    <div class="t-sub">圣 玛 格 丽 特 修 道 院</div>
+    <h1>暴风雪教堂</h1>
+    <div class="t-en">BLIZZARD CHAPEL</div>
+    <div class="title-btns">
+      <button class="btn-start" onclick="startGame()">开始游戏</button>
+      <button class="btn-sub" onclick="openRewind()">回溯过去</button>
+      <button class="btn-sub" onclick="openEndings()">结局一览</button>
+    </div>
+  </div>
+
+  <!-- 开场演出（黑屏 → 第一天 → 亮起 bg01 + 对话框 + 立绘） -->
+  <div class="screen full" id="screen-intro">
+    <div class="intro-bg" id="introBg"></div>
+    <div id="introBlack"></div>
+    <div class="intro-day" id="introDay">第 一 天</div>
+        <div class="intro-dialog" id="introDialog">
+          <div class="intro-name" id="introName">许赎</div>
+          <div class="intro-text" id="introText"></div>
+          <div class="intro-portrait" id="introPortrait"><img id="introPortraitImg" src="" alt="立绘"></div>
+        </div>
+        <div class="intro-choices" id="introChoices"></div>
+  </div>
+
+  <!-- 主界面（聊天 + 导航） -->
+  <div class="screen" id="screen-chat">
+    <div class="topbar">
+      <div class="tb-title" id="chatTitle">晚祷</div>
+      <div class="tb-sub" id="nightLabel">第一夜</div>
+    </div>
+    <div id="statBar">
+      <span class="stat-ap">行动点 <b id="statAP">8</b></span>
+      <span class="sep"></span>
+      <span>失言 <b id="statSlip">0</b></span>
+      <span class="sep"></span>
+      <span>关键对话 <b id="statKey">0</b>/3</span>
+    </div>
+    <div id="pageWrap">
+
+      <!-- 主页 -->
+      <div class="page active" id="page-home" data-nav="home">
+        <div class="ph-top">
+          <div class="ph-clock" id="phClock">18:00</div>
+          <div class="ph-date" id="phDate">第一夜</div>
+        </div>
+        <div id="phNoticeWrap"></div>
+        <div class="ph-apps">
+          <div class="ph-grid" id="phGrid"></div>
+        </div>
+
+        <!-- App 覆盖层：备忘录 -->
+        <div class="app-screen" id="app-memo">
+          <div class="app-head"><button class="app-back" onclick="closeApp()">‹</button><div class="app-title">备忘录</div></div>
+          <div class="app-body" id="appMemoBody"></div>
+        </div>
+        <!-- App 覆盖层：设置 -->
+        <div class="app-screen" id="app-settings">
+          <div class="app-head"><button class="app-back" onclick="closeApp()">‹</button><div class="app-title">设置</div></div>
+          <div class="app-body">
+            <div class="set-group"><div class="sg-title">通用</div>
+              <div class="set-item"><span>机型</span><span class="si-v">St. Margaret</span></div>
+              <div class="set-item"><span>系统版本</span><span class="si-v">晚祷 OS 1.0</span></div>
+              <div class="set-item"><span>存储</span><span class="si-v">2.1 MB / 64 GB</span></div>
+            </div>
+            <div class="set-group"><div class="sg-title">连接</div>
+              <div class="set-item"><span>蜂窝网络</span><span class="si-v" style="color:#e0a05a;">无服务</span></div>
+              <div class="set-item"><span>Wi-Fi</span><span class="si-v">教堂内网</span></div>
+              <div class="set-item"><span>蓝牙</span><span class="si-v">关闭</span></div>
+            </div>
+            <div class="set-group"><div class="sg-title">关于</div>
+              <div class="set-item"><span>守夜人</span><span class="si-v">你</span></div>
+              <div class="set-item"><span>当前夜次</span><span class="si-v" id="setNight">第一夜</span></div>
+            </div>
+          </div>
+        </div>
+        <!-- App 覆盖层：相册 -->
+        <div class="app-screen" id="app-album">
+          <div class="app-head"><button class="app-back" onclick="closeApp()">‹</button><div class="app-title">相册</div></div>
+          <div class="app-body">
+            <div class="album-empty"><div class="ae-ic">🖼</div><div class="ae-txt">相册是空的。<br>暴风雪封了路，还没来得及拍照。</div></div>
+          </div>
+        </div>
+        <!-- App 覆盖层：电话 -->
+        <div class="app-screen" id="app-phone">
+          <div class="app-head"><button class="app-back" onclick="closeApp()">‹</button><div class="app-title">电话</div></div>
+          <div class="app-body">
+            <div class="phone-nosignal"><span>▲</span> 无服务 · 无法拨号</div>
+            <div class="phone-dial">
+              <div class="phone-num" id="phoneNum"></div>
+              <div class="phone-cap">信号塔被雪压断了。<br>这里拨不出去。</div>
+              <div class="dialpad">
+                <button class="dial-btn">1<small>&nbsp;</small></button>
+                <button class="dial-btn">2<small>ABC</small></button>
+                <button class="dial-btn">3<small>DEF</small></button>
+                <button class="dial-btn">4<small>GHI</small></button>
+                <button class="dial-btn">5<small>JKL</small></button>
+                <button class="dial-btn">6<small>MNO</small></button>
+                <button class="dial-btn">7<small>PQRS</small></button>
+                <button class="dial-btn">8<small>TUV</small></button>
+                <button class="dial-btn">9<small>WXYZ</small></button>
+                <button class="dial-btn">*<small>&nbsp;</small></button>
+                <button class="dial-btn">0<small>+</small></button>
+                <button class="dial-btn">#<small>&nbsp;</small></button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- App 覆盖层：钱包 -->
+        <div class="app-screen" id="app-wallet">
+          <div class="app-head"><button class="app-back" onclick="closeApp()">‹</button><div class="app-title">钱包</div></div>
+          <div class="app-body">
+            <div class="wallet-card">
+              <div class="w-label">账户余额</div>
+              <div class="w-bal">0.5<small>元</small></div>
+              <div class="w-sub">守夜人 · 临时账户</div>
+            </div>
+            <div class="wallet-rows">
+              <div class="wallet-row"><span class="wr-l">交易记录</span><span class="wr-r">暂无</span></div>
+              <div class="wallet-row"><span class="wr-l">绑定银行卡</span><span class="wr-r">未绑定</span></div>
+              <div class="wallet-row"><span class="wr-l">提现</span><span class="wr-r">不可用</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 讯息页 -->
+      <div class="page" id="page-msgs" data-nav="msgs">
+        <div class="page-head"><h2>讯 息</h2><span>MESSAGES</span></div>
+        <div class="page-scroll" id="msgList"></div>
+      </div>
+
+      <!-- 行动页 -->
+      <div class="page" id="page-actions" data-nav="actions">
+        <div class="page-head"><h2>行 动</h2><span>ACTIONS</span></div>
+        <div class="page-scroll">
+          <div class="act-section-title">场 景 <span class="ast-hint">选一个地方查看</span></div>
+          <div class="scene-grid" id="sceneGrid"></div>
+          <div class="act-section-title">证 据 板 <span class="ast-hint">已收集的线索</span></div>
+          <div class="ev-board" id="evBoard"></div>
+        </div>
+      </div>
+
+      <!-- 放逐页 -->
+      <div class="page" id="page-exile" data-nav="exile">
+        <div class="page-head"><h2>放 逐</h2><span>BANISHMENT</span></div>
+        <div class="page-scroll">
+          <div class="exile-mode">
+            <button id="modeExile" class="on" onclick="setExileMode('exile')">放逐</button>
+            <button id="modeSpare" onclick="setExileMode('spare')">放过</button>
+          </div>
+          <div class="exile-list" id="exileList"></div>
+          <button class="exile-go" id="exileGo" onclick="confirmExile()" disabled>确 认</button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- 底部导航 -->
+    <div id="nav">
+      <button class="nav-btn on" data-target="page-home" onclick="switchPage('page-home')">
+        <svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg>
+        <span>主页</span><i class="nav-dot"></i>
+      </button>
+      <button class="nav-btn" data-target="page-msgs" onclick="switchPage('page-msgs')">
+        <svg viewBox="0 0 24 24"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.5 8.5 0 0 1-3.9-.9L3 20l1-4.6A8.4 8.4 0 0 1 3 11.5 8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"/></svg>
+        <span>讯息</span><i class="nav-dot"></i>
+      </button>
+      <button class="nav-btn" data-target="page-actions" onclick="switchPage('page-actions')">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span>行动</span><i class="nav-dot"></i>
+      </button>
+      <button class="nav-btn" data-target="page-exile" onclick="switchPage('page-exile')">
+        <svg viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6"/><path d="M8 4v16" opacity=".4"/></svg>
+        <span>放逐</span><i class="nav-dot"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- 聊天详情页 -->
+  <div class="screen full" id="screen-chatdetail">
+    <div class="chat-head">
+      <button class="chat-back" onclick="closeChatDetail()">‹</button>
+      <img class="ava" id="cdAva" src="" style="width:38px;height:38px;border-radius:11px;object-fit:cover;background:#1a1a20;">
+      <div style="flex:1;">
+        <div class="ch-name" id="cdName">群聊</div>
+        <div class="ch-sub" id="cdSub"></div>
+      </div>
+    </div>
+    <div class="chat-body" id="chatBody"></div>
+    <div class="chat-input" id="chatInput"></div>
+  </div>
+
+  <!-- VN 场景页 -->
+  <div class="screen full" id="screen-vn">
+    <div class="vn-bg" id="vnBg"></div>
+    <div class="vn-cg" id="vnCg"></div>
+    <div class="vn-topbar">
+      <div class="chapter-name" id="vnChapter">场景</div>
+      <button class="vn-menu" onclick="exitVN()">离开</button>
+    </div>
+    <div class="vn-stage">
+      <div class="vn-emote" id="vnEmote"></div>
+      <div class="vn-dialog">
+        <div class="vn-charname" id="vnCharName"></div>
+        <p class="vn-text" id="vnText"></p>
+        <div id="vnExtra"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 指认页 -->
+  <div class="screen full" id="screen-accuse">
+    <div class="acc-hero">
+      <h2>最 终 指 认</h2>
+      <p>第五夜 · 大厅 · 所有人都在</p>
+    </div>
+    <div class="page-scroll" id="accuseBody"></div>
+  </div>
+
+  <!-- 通用弹窗 -->
+  <div id="modalMask" onclick="if(event.target===this)closeModal()">
+    <div class="modal" id="modalBox"></div>
+  </div>
+
+  <div id="toast"></div>
+
+  <!-- 结局一览弹窗 -->
+  <div id="endingsMask" onclick="if(event.target===this)closeEndings()">
+    <div class="endings-box">
+      <div class="endings-head">
+        <div class="eh-title">结局一览</div>
+        <button class="eh-close" onclick="closeEndings()">×</button>
+      </div>
+      <div class="endings-count" id="endingsCount"></div>
+      <div class="endings-grid" id="endingsGrid"></div>
+    </div>
+  </div>
+</div><script>
+/* ============================================================
+   数据层
+   ============================================================ */
+// 图片路径（相对路径，按实际文件名双后缀）
+const IMG = {
+  avt: {
+    keeper:'img/avt/avt01_keeper.png.png',
+    priest:'img/avt/avt02_priest_malcolm.png.jpg',
+    theresa:'img/avt/avt03_sister_teresa.png.jpg',
+    mary:'img/avt/avt04_mary_cook.png.jpg',
+    joseph:'img/avt/avt05_joseph_carpenter.png.jpg',
+    agnes:'img/avt/avt06_agnes_reporter.png.jpg',
+    samuel:'img/avt/avt07_samuel_gravedigger.png.jpg',
+    margaret:'img/avt/avt08_margaret_widow.png.jpg',
+    henry:'img/avt/avt09_henry_scholar.png.jpg',
+    johndoe:'img/avt/avt10_john_doe.png.jpg',
+    peter:'img/avt/avt11_peter_caretaker.png.jpg',
+    ben:'img/avt/avt12_old_ben.png.jpg',
+    helen:'img/avt/avt13_helen_carter.png.jpg',
+    philip:'img/avt/avt14_philip_gray.png.jpg',
+    confession:'img/avt/avt15_confession_anon.png.jpg',
+    system:'img/avt/avt16_system_chapel.png.jpg',
+    group:'img/avt/avt17_group_evening_prayer.png.jpg'
+  },
+  bg: {
+    exterior:'img/bg/bg01_church_exterior_night.png.png',
+    hall:'img/bg/bg02_church_hall_fire.png.png',
+    loft:'img/bg/bg03_organ_loft_normal.png.png',
+    apothecary:'img/bg/bg04_apothecary_normal.png.png',
+    porch:'img/bg/bg05_back_porch_snow.png.png',
+    kitchen:'img/bg/bg06_kitchen_fire.png.png',
+    tower:'img/bg/bg07_bell_tower_night.png.png',
+    towerBackdoor:'img/bg/bg08_bell_tower_backdoor_snow.png.png',
+    cryptEntrance:'img/bg/bg09_crypt_entrance_night.png.png',
+    crypt:'img/bg/bg10_crypt_candle.png.png',
+    westCorridor:'img/bg/bg11_west_corridor_night.png.png',
+    archive:'img/bg/bg12_archive_night.png.png',
+    office:'img/bg/bg13_priest_office_candle.png.png',
+    corridor:'img/bg/bg14_corridor_night.png.png',
+    radio:'img/bg/bg15_radio_room_night.png.png',
+    drain:'img/bg/bg16_drain_tunnel_snow.png.png',
+    inn:'img/bg/bg17_inn_dawn.png.png',
+    darkBasement:'img/bg/bg18_dark_basement.png.png',
+    home:'img/bg/bg19_home.png.png'
+  },
+  cg: {
+    oldbenBody:'img/cg/cg01_oldben_body.png.png',
+    peterDrawing:'img/cg/cg02_peter_drawing_apothecary.png.png',
+    henryAttacked:'img/cg/cg03_henry_attacked.png.png',
+    apothecaryLedger:'img/cg/cg04_apothecary_ledger_bottles.png.png',
+    cryptBones:'img/cg/cg05_crypt_bones_medallion.png.png',
+    finalAccusation:'img/cg/cg06_final_accusation_hall.png.png',
+    teresaSmirk:'img/cg/cg07_teresa_smirk.png.png',
+    teresaArrested:'img/cg/cg08_teresa_arrested.png.png',
+    teresaCollapse:'img/cg/cg09_teresa_collapse.png.png',
+    teresaEscape:'img/cg/cg10_teresa_escape_snow.png.png',
+    helenEscape:'img/cg/cg11_helen_snowmobile_escape.png.png',
+    philipEscape:'img/cg/cg12_philip_drain_escape.png.png',
+    badEnd:'img/cg/cg13_bad_end_basement_bell.png.png'
+  }
+};
+
+// 角色（名字（职业）格式）
+const CHARS = {
+  player:  { name:'你',                 role:'新守夜人',           ava:IMG.avt.keeper },
+  priest:  { name:'马尔科姆（神父）',   role:'教堂负责人',         ava:IMG.avt.priest },
+  theresa: { name:'特蕾莎（修女）',     role:'管药房厨房 · 始终微笑', ava:IMG.avt.theresa },
+  mary:    { name:'玛丽（厨娘）',       role:'厨娘 · 四十年',      ava:IMG.avt.mary },
+  joseph:  { name:'约瑟夫（木匠）',     role:'木匠 · 修管风琴',    ava:IMG.avt.joseph },
+  agnes:   { name:'艾格尼丝（记者）',   role:'假贵族真记者',       ava:IMG.avt.agnes },
+  samuel:  { name:'塞缪尔（守墓人）',   role:'墓穴看守',           ava:IMG.avt.samuel },
+  margaret:{ name:'玛格丽特（寡妇）',   role:'带女儿的女人',       ava:IMG.avt.margaret },
+  henry:   { name:'亨利（学者）',       role:'写教堂历史的学者',   ava:IMG.avt.henry },
+  johndoe: { name:'约翰·多伊（老人）', role:'失明的老人',         ava:IMG.avt.johndoe },
+  peter:   { name:'彼得（看护）',       role:'画画的孩子',         ava:IMG.avt.peter },
+  ben:     { name:'老本（管风琴师）',   role:'盲人管风琴师 · 已故', ava:IMG.avt.ben },
+  helen:   { name:'海伦（接线员）',     role:'山下旅店接线员',     ava:IMG.avt.helen },
+  philip:  { name:'菲利普（医生）',     role:'新来的年轻医生',     ava:IMG.avt.philip },
+  system:  { name:'教堂终端',           role:'系统通知',           ava:IMG.avt.system },
+  confession:{ name:'匿名告解',         role:'告解墙',             ava:IMG.avt.confession }
+};// 证据列表（E01-E19）
+const EVIDENCE_DEFS = {
+  E01:{name:'手腕捆绑痕', src:'菲利普 / 查尸体', chain:'presence'},
+  E02:{name:'手杖药房滑石粉', src:'查手杖', chain:'presence'},
+  E03:{name:'乐谱第13首', src:'查乐谱', chain:'presence'},
+  E04:{name:'门从外锁', src:'查门锁', chain:'chance'},
+  E05:{name:'旧登记册"特蕾莎·莫尔"', src:'亨利 / 艾格尼丝', chain:'motive'},
+  E06:{name:'真账本缺药', src:'菲利普 / 搜药房', chain:'motive'},
+  E07:{name:'买家信"老本得处理"', src:'搜药房', chain:'motive'},
+  E08:{name:'彼得画：修女进药房', src:'彼得 / 约翰', chain:'presence'},
+  E09:{name:'彼得画：特蕾莎拿绳子', src:'彼得 / 约翰', chain:'presence'},
+  E10:{name:'女儿画"哨子男人"', src:'玛格丽特', chain:'motive'},
+  E11:{name:'修女牌"特蕾莎·莫尔"', src:'墓穴', chain:'presence'},
+  E12:{name:'托马斯颅骨钝器伤', src:'墓穴', chain:'motive'},
+  E13:{name:'二十年前旧药瓶', src:'墓穴', chain:'chance'},
+  E14:{name:'海伦的信"T Sister"', src:'海伦', chain:'motive'},
+  E15:{name:'药房后窗脚印', src:'搜药房', chain:'chance'},
+  E16:{name:'特蕾莎证词"神父推的"', src:'对话', chain:'motive'},
+  E17:{name:'神父承认埋人', src:'对话', chain:'motive'},
+  E18:{name:'玛格丽特证词"特蕾莎威胁"', src:'坦白', chain:'motive'},
+  E19:{name:'约瑟夫承认栽赃', src:'坦白', chain:'na'}
+};
+// 三条链
+const CHAINS = {
+  presence:{ label:'在场', items:['E01','E02','E08','E09','E11'] },
+  motive:  { label:'动机', items:['E05','E06','E07','E14','E17','E18'] },
+  chance:  { label:'机会', items:['E04','E13','E15'] }
+};
+
+// 放逐候选池（每夜可放逐的 key；locked 为特蕾莎锁死夜）
+const CANDIDATE_POOL = {
+  1:['joseph','samuel','agnes','peter','mary'],
+  2:['joseph','samuel','agnes','peter','mary','margaret','henry','johndoe'],
+  3:['joseph','samuel','agnes','peter','mary','margaret','henry','johndoe','theresa','priest'],
+  4:['joseph','samuel','agnes','peter','mary','margaret','henry','johndoe','theresa','priest'],
+  5:[]
+};
+// 特蕾莎锁死（不作候选）的夜
+const THERESA_LOCKED = {1:true, 2:true};
+
+// 每夜正常死者/伤者
+const NIGHT_BASE = {
+  1:{ dead:'ben',    injured:null },
+  2:{ dead:null,     injured:'henry' },
+  3:{ dead:null,     injured:null },
+  4:{ dead:null,     injured:null },
+  5:{ dead:null,     injured:null }
+};
+// 放逐错后因果替换（夜->被放逐者->替换死者）
+const NIGHT_SUBSTITUTE = {
+  1:{},
+  2:{ joseph:'agnes', samuel:'mary', agnes:'joseph', peter:'johndoe', mary:'samuel',
+      margaret:'mary', henry:'agnes', johndoe:'peter' },
+  3:{ joseph:'henry', samuel:'johndoe', agnes:'peter', peter:'margaret', mary:'samuel',
+      margaret:'johndoe', henry:'agnes', johndoe:'peter', priest:'mary' },
+  4:{}
+};
+
+// 初始住客（可放逐池基础，不含玩家/海伦/菲利普/特蕾莎/神父/老本）
+const RESIDENTS = ['joseph','samuel','agnes','peter','mary','margaret','henry','johndoe','priest','theresa'];// VN 搜证场景（每夜一个主场景，可多搜）
+const VN_SCENES = {
+  1:{ name:'管风琴阁楼', title:'第一夜 · 管风琴阁楼', bg:IMG.bg.loft, cg:IMG.cg.oldbenBody,
+      intro:'老本吊在管风琴旁。导盲犬关在钟楼里叫。乐谱翻到第 13 首赞美诗。手杖在房间另一头。菲利普从后门廊被救醒，冻伤，一瘸一拐赶来："手腕有捆绑痕迹。不是自杀。谁干的？"',
+      searches:[
+        {label:'查验尸体', ev:'E01', note:'手腕捆绑痕'},
+        {label:'查看手杖', ev:'E02', note:'手杖沾药房滑石粉'},
+        {label:'查看乐谱第13首', ev:'E03', note:'老本在指认第13声钟响'},
+        {label:'查看门锁', ev:'E04', note:'门从外面锁，钥匙只有神父和守夜人有'}
+      ]},
+  2:{ name:'地下墓穴入口', title:'第二夜 · 地下墓穴入口', bg:IMG.bg.cryptEntrance, cg:IMG.cg.henryAttacked,
+      intro:'亨利在地下墓穴入口被袭击，头部受伤。菲利普处理伤口。亨利昏迷前说："有人不想让我写那本书……登记册……特蕾莎·莫尔……她改过名字……"',
+      searches:[
+        {label:'查看现场', note:'地上有拖拽痕迹，通向墓穴'},
+        {label:'查看亨利', ev:'E05', note:'后脑钝器伤；他提过旧登记册'}
+      ]},
+  3:{ name:'药房', title:'第三夜 · 药房', bg:IMG.bg.apothecary, cg:IMG.cg.apothecaryLedger,
+      intro:'你领钥匙搜药房。假账本和真账本对比：镇静剂缺12支，吗啡缺6瓶。药房后窗有撬痕，雪地脚印通向山下。',
+      searches:[
+        {label:'账本对比', ev:'E06', note:'药品失踪证据'},
+        {label:'后窗脚印', ev:'E15', note:'走私路线'},
+        {label:'药柜底层', ev:'E07', note:'特蕾莎写给买家的信"老本发现了，得处理"'},
+        {label:'药房垃圾桶', note:'用过的镇静剂空瓶，标签被撕'}
+      ]},
+  4:{ name:'地下墓穴', title:'第四夜 · 地下墓穴', bg:IMG.bg.crypt, cg:IMG.cg.cryptBones,
+      intro:'你下到墓穴。托马斯遗骨脖子上挂着修女牌，刻着"特蕾莎·莫尔"。旁边有旧药瓶，标签是二十年前的。',
+      searches:[
+        {label:'查看遗骨', ev:'E12', note:'托马斯颅骨钝器伤，不是坠楼'},
+        {label:'查看修女牌', ev:'E11', note:'特蕾莎年轻时的修女牌'},
+        {label:'查看旧药瓶', ev:'E13', note:'二十年前同款镇静剂'}
+      ]}
+};
+
+// 群聊脚本：scripts[night] = [ {speaker, text, drawing?}, ... ]
+// 用占位符 {{TX}} 表示待填文本
+const GROUP_SCRIPT = {
+  1:[
+    {speaker:'system', text:'晚祷群 · 暴风雪封路，信号不稳。'},
+    {speaker:'priest', text:'〔待填·第一夜·神父·早〕大家今晚早点回房，风雪太大。'},
+    {speaker:'mary',   text:'〔待填·第一夜·玛丽·早〕厨房还有热汤，谁冷了就下来。'},
+    {speaker:'samuel', text:'〔待填·第一夜·塞缪尔·早〕地下室的门我锁好了。'},
+    {speaker:'agnes',  text:'〔待填·第一夜·艾格尼丝·早〕这教堂的历史，比你们想的深。'},
+    {speaker:'system', text:'〔待填·第一夜·尸体被发现〕楼上有人在喊——老本出事了。'},
+    {speaker:'priest', text:'〔待填·第一夜·神父·尸体后〕都别动现场，我去看看。'},
+    {speaker:'joseph', text:'〔待填·第一夜·约瑟夫·尸体后〕是不是他自己想不开？'},
+    {speaker:'theresa',text:'〔待填·第一夜·特蕾莎·尸体后〕可怜的老人家……愿主收留他。'},
+    {speaker:'peter',  text:'〔待填·第一夜·彼得·尸体后〕我……我什么都没看见。'}
+  ],
+  2:[
+    {speaker:'system', text:'第二夜。风雪没停。'},
+    {speaker:'joseph', text:'〔待填·第二夜·约瑟夫·早〕昨晚神父半夜去过阁楼。'},
+    {speaker:'agnes',  text:'〔待填·第二夜·艾格尼丝·早〕我怀疑守墓人塞缪尔。'},
+    {speaker:'margaret',text:'〔待填·第二夜·玛格丽特·早〕我女儿说……见过一个"哨子男人"。'},
+    {speaker:'samuel', text:'〔待填·第二夜·塞缪尔·早〕地下室的门，从里面开过。'},
+    {speaker:'system', text:'〔待填·第二夜·亨利被袭〕地下室入口那边有动静。'},
+    {speaker:'priest', text:'〔待填·第二夜·神父·午后〕别报警，山下的路还没通。'},
+    {speaker:'theresa',text:'〔待填·第二夜·特蕾莎·午后〕亨利只是摔了一跤，别多想。'},
+    {speaker:'theresa',text:'〔待填·第二夜·特蕾莎·放逐前〕神父半夜在阁楼，我只是实话实说。'},
+    {speaker:'priest', text:'〔待填·第二夜·神父·放逐前〕她在胡说什么。'},
+    {speaker:'mary',   text:'〔待填·第二夜·玛丽·放逐前〕我昨晚……看见修女拿着个瓶子。'}
+  ],
+  3:[
+    {speaker:'system', text:'第三夜。药房的门开过。'},
+    {speaker:'henry',  text:'〔待填·第三夜·亨利·早〕那本旧登记册，上面写着一个改了名的修女。'},
+    {speaker:'theresa',text:'〔待填·第三夜·特蕾莎·早〕账本？我从不看账本。'},
+    {speaker:'mary',   text:'〔待填·第三夜·玛丽·早〕特蕾莎让我"拿安眠药"……我不太懂。'},
+    {speaker:'theresa',text:'〔待填·第三夜·特蕾莎·午后〕神父推的。是他推的。'},
+    {speaker:'priest', text:'〔待填·第三夜·神父·午后〕我……我当年是有苦衷的。'},
+    {speaker:'philip', text:'〔待填·第三夜·菲利普·午后〕真账本对不上，缺的药不少。'},
+    {speaker:'theresa',text:'〔待填·第三夜·特蕾莎·放逐前〕你们谁信我，谁就不是敌人。'},
+    {speaker:'priest', text:'〔待填·第三夜·神父·放逐前〕若我说出真相，很多人会害怕。'}
+  ],
+  4:[
+    {speaker:'system', text:'第四夜。墓穴里有光。'},
+    {speaker:'priest', text:'〔待填·第四夜·神父·早〕二十年前，我埋过一个人。'},
+    {speaker:'margaret',text:'〔待填·第四夜·玛格丽特·早〕我女儿画的那个哨子男人……是托马斯。'},
+    {speaker:'margaret',text:'〔待填·第四夜·玛格丽特·午后〕特蕾莎威胁过我，不许说。'},
+    {speaker:'joseph', text:'〔待填·第四夜·约瑟夫·午后〕我承认，我栽赃过神父。'},
+    {speaker:'theresa',text:'〔待填·第四夜·特蕾莎·放逐前〕你若早说，就不用受这么多罪。'},
+    {speaker:'priest', text:'〔待填·第四夜·神父·放逐前〕她让我埋的。是她。'}
+  ],
+  5:[
+    {speaker:'system', text:'第五夜。所有人到大厅。指认开始。'}
+  ]
+};// 私聊脚本：PM_SCRIPT[night][char] = { open:[...], choices:[{text, reply, effect}] }
+// effect: {slip:+1} / {favor:+1} / {ev:'E08'} / {flag:'xxx'}
+const PM_SCRIPT = {
+  1:{
+    helen:{ open:[{text:'〔待填·第一夜·海伦·开场〕喂，新来的守夜人？教堂怎么样？'}],
+      choices:[
+        {text:'帮我查二十年前的旧案', reply:'〔待填〕好，我翻翻旧档案。', effect:{flag:'helen_helped', favor:+1}},
+        {text:'这里只是普通的教堂', reply:'〔待填〕是吗……', effect:{}}
+      ]},
+    joseph:{ open:[{text:'〔待填·第一夜·约瑟夫·午后〕神父半夜去过阁楼。'}],
+      choices:[
+        {text:'他几点去的？', reply:'〔待填〕大概十二点以后。', effect:{}},
+        {text:'你别瞎说', reply:'〔待填〕随你信不信。', effect:{slip:+1}}
+      ]},
+    samuel:{ open:[{text:'〔待填·第一夜·塞缪尔·放逐前〕地下室的门，从里面开过。'}],
+      choices:[
+        {text:'门锁是谁管的？', reply:'〔待填〕钥匙在神父和守夜人手上。', effect:{}},
+        {text:'你别吓我', reply:'〔待填〕我没吓你。', effect:{}}
+      ]},
+    mary:{ open:[{text:'〔待填·第一夜·玛丽·放逐前〕我看见修女拿着个瓶子。'}],
+      choices:[
+        {text:'什么瓶子？什么时间？', reply:'〔待填〕昨晚，白色的那种药瓶。', effect:{}},
+        {text:'你看错了吧', reply:'〔待填〕也许吧……', effect:{}}
+      ]}
+  },
+  2:{
+    agnes:{ open:[{text:'〔待填·第二夜·艾格尼丝·早〕我觉得是塞缪尔。'}],
+      choices:[
+        {text:'看看他的值班表', reply:'〔待填〕他昨晚根本不在岗。', effect:{}},
+        {text:'你有证据吗', reply:'〔待填〕直觉。', effect:{slip:+1}}
+      ]},
+    margaret:{ open:[{text:'〔待填·第二夜·玛格丽特〕我女儿画了个"哨子男人"。'}],
+      choices:[
+        {text:'那个男人是谁？', reply:'〔待填〕我……我不知道。', effect:{}},
+        {text:'小孩子乱画的', reply:'〔待填〕你这么说也对……', effect:{slip:+1}}
+      ]},
+    philip:{ open:[{text:'〔待填·第二夜·菲利普〕真账本和假账本，对不上。'}],
+      choices:[
+        {text:'我信你，一起查', reply:'〔待填〕好，我帮你。', effect:{favor:+1}},
+        {text:'别多管闲事', reply:'〔待填〕……我只是提醒你。', effect:{}}
+      ]}
+  },
+  3:{
+    theresa:{ open:[{text:'〔待填·第三夜·特蕾莎·主动〕守夜人，你听我说——是神父推的。'}],
+      choices:[
+        {text:'把细节说清楚', reply:'〔待填〕那天晚上……他让我别说。', effect:{flag:'theresa_suspect'}},
+        {text:'给我真账本', reply:'〔待填〕好吧，你自己看。', effect:{ev:'E06'}}
+      ]},
+    priest:{ open:[{text:'〔待填·第三夜·神父〕我承认，我当年埋过人。'}],
+      choices:[
+        {text:'你在保护谁？', reply:'〔待填〕一个我不该保护的人。', effect:{flag:'priest_motive'}},
+        {text:'你是共犯', reply:'〔待填〕……你给我闭嘴。', effect:{slip:+1}}
+      ]},
+    johndoe:{ open:[{text:'〔待填·第三夜·约翰·半夜敲门〕我给你带了个东西——彼得的画。'}],
+      choices:[
+        {text:'他为什么不早说？', reply:'〔待填〕他怕。', effect:{ev:'E08'}},
+        {text:'谢谢你', reply:'〔待填〕……嗯。', effect:{ev:'E09'}}
+      ]}
+  },
+  4:{
+    helen:{ open:[{text:'〔待填·第四夜·海伦·跑路〕TA 似乎有话对你说。你想走吗？'}],
+      choices:[
+        {text:'带我离开这里（跑路）', reply:'〔待填〕车已经在后门。', effect:{flag:'escape_helen'}},
+        {text:'我还不能走，要留下查清', reply:'〔待填〕我懂。', effect:{favor:+1}}
+      ]},
+    philip:{ open:[{text:'〔待填·第四夜·菲利普·跑路〕排水道能通到山下。走吧。'}],
+      choices:[
+        {text:'跟你走（跑路）', reply:'〔待填〕那就现在。', effect:{flag:'escape_philip'}},
+        {text:'我要留下指认凶手', reply:'〔待填〕……我尊重你。', effect:{favor:+1}}
+      ]},
+    theresa:{ open:[{text:'〔待填·第四夜·特蕾莎〕你若早说，就不用受这么多罪。'}],
+      choices:[
+        {text:'你在威胁我', reply:'〔待填〕我只是提醒。', effect:{slip:+1}},
+        {text:'我不会放过你', reply:'〔待填〕那你就试试。', effect:{}}]}
+  }
+};
+
+// 告解墙匿名帖：每夜投放
+const CONFESS_POSTS = {
+  1:['〔待填·告解·第一夜〕新来的，今晚别数房间。'],
+  2:['〔待填·告解·第二夜〕他看见了。所以他也得死。'],
+  3:['〔待填·告解·第三夜〕药房的账本对不上。'],
+  4:['〔待填·告解·第四夜〕你在黑暗里，会听见钟响十三下。']
+};
+
+// 结局定义
+const ENDING_DEFS = {
+  holy:      { title:'圣堂守住',   cg:IMG.cg.teresaArrested,  bg:IMG.bg.exterior,
+               desc:'你指认了特蕾莎，三条链完整，失言未越线。警察在天亮时上了山。特蕾莎被带走，神父的罪也被翻出。', tag:'TRUE END' },
+  pyrrhic:   { title:'惨胜',       cg:IMG.cg.teresaCollapse,  bg:IMG.bg.hall,
+               desc:'你揭穿了特蕾莎，但只握住了两条链。她在指认中途倒下了。真相大白，代价沉重。', tag:'HARD END' },
+  insufficient:{ title:'证据不足', cg:IMG.cg.teresaEscape,    bg:IMG.bg.exterior,
+               desc:'你的指认站不住脚。特蕾莎带着笑，走进了风雪。', tag:'BAD END' },
+  wrong:     { title:'错失真凶',   cg:null,                   bg:IMG.bg.darkBasement,
+               desc:'你指认了神父。他在沉默中认罪，而真正的凶手在人群后微笑。', tag:'WRONG END' },
+  bad:       { title:'钟响十三下', cg:IMG.cg.badEnd,          bg:IMG.bg.darkBasement,
+               desc:'失言值越了线。你被拖进地下室，钟声响了十三下。再没人听见你的声音。', tag:'BAD END' },
+  escapeHelen:{ title:'风雪归途',  cg:IMG.cg.helenEscape,     bg:IMG.bg.inn,
+               desc:'你随海伦坐上雪地车，逃离了教堂。故事没有真相，只有活下来的人。', tag:'ESCAPE END' },
+    escapePhilip:{ title:'排水道尽头', cg:IMG.cg.philipEscape,  bg:IMG.bg.drain,
+               desc:'你跟着菲利普钻进排水道。身后的教堂越来越远。你活着，但没回头。', tag:'ESCAPE END' },
+  // —— 以下为预留结局位（第 8、9 个），届时补内容 ——
+  silent:    { title:'沉默守夜',   cg:null, bg:IMG.bg.exterior,
+               desc:'你什么也没做。风雪停了，教堂还在，而真相永远埋在雪下。', tag:'HIDDEN END' },
+  lost:      { title:'迷失风雪',   cg:null, bg:IMG.bg.porch,
+               desc:'你提着行李跑进了风雪。雪越来越大，你在树林里失去了方向。早知道，就不跑了。', tag:'BAD END' }
+};
+
+// 结局一览：固定 9 个格子（顺序即展示顺序），未解锁显示问号
+const ENDING_SLOTS = [
+  'holy','pyrrhic','insufficient','wrong','bad',
+  'escapeHelen','escapePhilip','silent','lost'
+];
+
+// 已解锁结局（持久化到 localStorage）
+const ENDINGS_KEY = 'chapel_endings_unlocked_v1';
+function getUnlockedEndings(){
+  try{ return JSON.parse(localStorage.getItem(ENDINGS_KEY)||'[]'); }catch(e){ return []; }
+}
+function unlockEnding(key){
+  if(!key) return;
+  const list=getUnlockedEndings();
+  if(!list.includes(key)){ list.push(key); try{ localStorage.setItem(ENDINGS_KEY, JSON.stringify(list)); }catch(e){} }
+}
+// 由 def 对象反查结局 key
+function endingKeyOf(def){
+  for(const k in ENDING_DEFS){ if(ENDING_DEFS[k]===def) return k; }
+  return null;
+}
+// 结局一览面板
+function openEndings(){
+  const grid=$('endingsGrid'), cnt=$('endingsCount');
+  if(!grid) return;
+  const unlocked=getUnlockedEndings();
+  grid.innerHTML = ENDING_SLOTS.map((key,idx)=>{
+    const def=ENDING_DEFS[key];
+    const isUnlocked = def && unlocked.includes(key);
+    if(isUnlocked){
+      return '<div class="ending-cell unlocked" title="'+esc(def.title)+'">'+
+        '<div class="ec-q">✦</div>'+
+        '<div class="ec-name">'+esc(def.title)+'</div></div>';
+    }
+    return '<div class="ending-cell locked">'+
+      '<div class="ec-q">?</div>'+
+      '<div class="ec-num">结局 '+(idx+1)+'</div></div>';
+  }).join('');
+  if(cnt) cnt.textContent = '已解锁 '+unlocked.filter(k=>ENDING_SLOTS.includes(k)).length + ' / '+ENDING_SLOTS.length;
+  $('endingsMask').classList.add('show');
+}
+function closeEndings(){ $('endingsMask').classList.remove('show'); }
+function openRewind(){
+  openModal(
+    '<div class="mbody" style="padding:22px;text-align:center;">'+
+      '<div style="font-size:15px;letter-spacing:3px;color:#e8c87a;margin-bottom:10px;">回溯过去</div>'+
+      '<p style="font-size:13px;line-height:1.9;color:#b8b4be;margin:0;">回到过去的某一个夜晚，重新做出选择。<br>（功能开发中）</p>'+
+    '</div>'+
+    '<div class="mfoot"><button class="pri" onclick="closeModal()">知道了</button></div>'
+  );
+}
+
+/* ============================================================
+   游戏状态
+   ============================================================ */
+let state;
+
+function freshState(){
+  return {
+    night:1,
+    ap:8,              // 行动点（整数）
+    maxAp:8,
+    clock:18,          // 手机时间（首次 18 点）
+    walletOpened:false,// 是否已打开过钱包
+    slip:0,            // 失言值
+    keyTalks:0,        // 今日关键对话次数（上限3）
+    keyTalkMax:3,
+    evidence:{},       // {E01:true,...}
+    flags:{},          // 各类开关
+    favor:{helen:0, philip:0},   // 好感
+    alive:{},          // {char:true/false}
+    exiled:[],         // 已放逐的人
+    dead:[],           // 已死的人
+    rewardedReset:0,   // 补救计数
+    groupRead:{},      // 群聊已读到的轮次（简化：整段已读）
+    pmSeen:{},         // 私聊已看
+    confessSeen:{},    // 告解已看
+    pendingPM:{},      // 本夜可私聊的角色 {char:true}
+    vnDone:{},         // 已完成的VN场景 {night:true}
+    nightResult:null,  // 上一夜结算数据
+    ending:null
+  };
+}
+
+// 初始化
+function initGame(){
+  state = freshState();
+  RESIDENTS.forEach(k=>{ state.alive[k]=true; });
+  state.alive['ben']=false;   // 老本已死
+  state.alive['henry']=true;
+}
+
+/* ============================================================ 工具 */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function isAlive(k){ return !!state.alive[k]; }
+function hasEv(id){ return !!state.evidence[id]; }
+function giveEv(id){ if(id && !state.evidence[id]){ state.evidence[id]=true; showToast('获得证据：'+EVIDENCE_DEFS[id].name); } }
+function addSlip(n){ state.slip += n; toastStat(); }
+function addFavor(k,n){ state.favor[k]=(state.favor[k]||0)+n; }
+function toastStat(){
+  if($('statAP')) $('statAP').textContent = Math.max(0,state.ap);
+  if($('statSlip')) $('statSlip').textContent = state.slip;
+  if($('statKey')) $('statKey').textContent = state.keyTalks;
+}
+
+let toastTimer=null;
+function showToast(msg){
+  const t=$('toast'); if(!t) return;
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove('show'),1600);
+}
+
+function showHint(msg, onClick, keep){
+  const h=$('hintBar'); if(!h) return;
+  h.innerHTML = msg;
+  h.classList.add('show');
+  if(onClick){ h.classList.add('clickable'); h.onclick=()=>{ hideHint(); onClick(); }; }
+  else { h.classList.remove('clickable'); h.onclick=null; }
+  if(!keep){ setTimeout(hideHint, 3800); }
+}
+function hideHint(){ const h=$('hintBar'); if(h){ h.classList.remove('show','clickable'); h.onclick=null; } }
+
+/* ============================================================ 屏幕切换 */
+function showScreen(id){
+  ['screen-title','screen-intro','screen-chat','screen-chatdetail','screen-vn','screen-accuse'].forEach(s=>{
+    const el=$(s); if(el) el.classList.toggle('active', s===id);
+  });
+}
+
+function startGame(){
+  initGame();
+  playIntro();
+}
+
+/* ============================================================
+   开场演出：剧本驱动
+   指令类型：
+     {bg:'img/bg/..'}      切换背景（淡入）
+     {shake:2}             背景抖动（走路）
+     {black:'on'|'off'}    短暂黑屏开/关
+     {wait:ms}             自动等待后继续
+     {say:'名字', text}    台词（等点击推进；打字中点击=补全）
+   最后一条 say 之后点击 → 进入游戏
+   ============================================================ */
+let introTimer=null;
+let introScript=[];
+let introIndex=0;
+let introWaiting=false;        // 是否停在某句台词等点击
+let introChoicePending=null;   // 当前待选的选项列表
+
+// 开场剧本
+const INTRO_SCRIPT = [
+  // —— bg01：许赎独自走近教堂 ——
+  { bg:'img/bg/bg01_church_exterior_night.png.png' },
+  { wait:600 },
+  // 第一段：许赎自言自语（有立绘）
+  { say:'许赎', text:'圣玛格丽特修道院……终于到了，这教堂怎么这么偏？' },
+  { say:'许赎', text:'看起来还这么旧，艾格不会骗了我吧，这里真的能发得起工资吗。' },
+  { say:'许赎', text:'算了，雪越来越大了，先进去吧。' },
+  // 走路抖动两下 → 短暂黑屏 → 切 bg02
+  { hideDialog:true },
+  { shake:2 },
+  { black:'on' },
+  { bg:'img/bg/bg02_church_hall_fire.png.png' },
+    { black:'off' },
+  // —— bg02 大厅：？？？ 与神父 ——
+  { say:'？？？', text:'晚上好，孩子。你是新来的守夜人吗？' },
+  { say:'许赎',  text:'啊，是的，您是？' },
+  { say:'？？？', text:'我是这里的神父，也是总负责人。你可以称呼我为马尔科姆。' },
+  { say:'许赎',  text:'好的，马……神父。' },
+  { say:'马尔科姆（神父）', text:'我们这里招守夜人很久了，可惜这里地方太偏僻了，没什么人愿意来。' },
+  { say:'马尔科姆（神父）', text:'说起来，你还是第一个愿意来的人呢。' },
+  { say:'许赎',  text:'我……我只是想找份工作而已。' },
+  { say:'马尔科姆（神父）', text:'呵呵，孩子，你的心思很单纯。' },
+  { say:'马尔科姆（神父）', text:'你先去收拾一下行李吧，我带你去你的房间。' },
+  { say:'', text:'他边说，边给你带路，最后停在了一间房间前。' },
+  // —— 切 bg19 房间 ——
+  { black:'on' },
+  { bg:'img/bg/bg19_home.png.png' },
+  { black:'off' },
+  { say:'马尔科姆（神父）', text:'这里是守夜人的房间，我麻烦特雷莎修女帮忙收拾过了。' },
+  { say:'许赎',  text:'谢谢，我确实需要收拾一下行李。' },
+  { say:'马尔科姆（神父）', text:'好孩子，你先休息吧，到了晚餐的时候我会来提醒你的。愿主保佑你。' },
+  { say:'', text:'他点点头，开门离开，脚步声渐渐远去。' },
+  // —— 神父走后，许赎独处，出现选择 ——
+  { say:'许赎', text:'神父啊…听起来还挺神父的。' },
+  { say:'许赎', text:'但是这个环境会不会太艰苦了一点？！' },
+  { choice:[
+      { text:'忍一时吃饱穿暖', branch:'stay' },
+      { text:'没入职我直接跑', branch:'run' }
+  ]}
+];
+
+// 分支：留下（选项一）
+const INTRO_STAY = [
+  { say:'许赎', text:'好歹有个睡觉的地方了，唉。' },
+  { say:'许赎', text:'要不是山下旅馆爆满，也不至于要来这里兼职。' },
+  { say:'许赎', text:'守夜人，我只在游戏里见过，应该是保安的意思吧？' },
+  { say:'', text:'你看着整洁但依旧破旧的房间，只觉得头痛。' },
+  { say:'', text:'好不容易收拾完，天色已经暗了下来。窗外的暴风雪更大了，你不由得庆幸自己没有离开。' },
+  { say:'许赎', text:'好累，好饿，好困…玩个手机休息一下。' },
+  { say:'', text:'你正准备拿出手机来，门口传来敲门声。你打开门，神父站在门口，手里提着提灯。' },
+  { say:'', text:'他见你出来，微微笑了，眼角的细纹显得很慈祥，但你莫名感觉他看起来很疲惫。' },
+  { say:'马尔科姆（神父）', text:'孩子，有个不幸的消息我必须告诉你。' },
+  { say:'马尔科姆（神父）', text:'外面的暴风雪太大，我们的供电系统被损坏了，教堂里的照明暂时无法保障。' },
+  { say:'许赎', text:'纳尼？不是，我的意思是，这可怎么办？' },
+  { say:'', text:'怎么这么倒霉？你感到一阵茫然，眼神缓缓看向了神父手里的提灯。' },
+  { say:'', text:'不会只能用这个吧？' },
+  { say:'', text:'马尔科姆神父似乎看穿了你的担忧。他好笑地摇摇头，拿出手电筒递给你。' },
+  { say:'马尔科姆（神父）', text:'我们这里还是有备用电源的，只是存电不多，非必要的时候就不要开灯了。' },
+  { say:'马尔科姆（神父）', text:'而且由于暴风雪，教堂里来了几个避难的新客人，现在也被迫逗留在这里了。' },
+  { say:'马尔科姆（神父）', text:'为了保证大家信息交流方便，我们建了群，你也进来吧。' },
+  { say:'', text:'你拿出手机，加入了群聊。' },
+  { end:true }
+];
+
+// 分支：跑路（选项二）
+const INTRO_RUN = [
+  { say:'许赎', text:'我高中住宿都没住过这么烂的房间。太可怕了。' },
+  { say:'许赎', text:'反正也没签什么合同，看起来还怪瘆人的，趁着雪更大之前速度跑路。' },
+  { say:'', text:'你燥候了一会，打开门，看见外面空无一人。' },
+  { say:'', text:'你提着行李跑路了。' },
+  { black:'on' },
+  { bg:'img/bg/bg05_back_porch_snow.png.png' },
+  { black:'off' },
+  { say:'', text:'跑到半路，雪下大了，你迷失在了树林里。' },
+  { say:'许赎', text:'早知道不跑了。' },
+  { ending:'lost' }
+];
+
+function playIntro(){
+  showScreen('screen-intro');
+  const bg=$('introBg'), day=$('introDay'), port=$('introPortrait'),
+      dlg=$('introDialog'), nm=$('introName'), txt=$('introText'), black=$('introBlack');
+  // 初始：全黑
+  bg.classList.remove('show');
+  bg.style.backgroundImage='';
+  day.classList.remove('show','hide');
+  port.classList.remove('show');
+  dlg.classList.remove('show','has-portrait');
+  black.classList.remove('on');
+  $('screen-intro').classList.remove('shake');
+  introDone=false;
+  introWaiting=false;
+  nm.textContent=''; nm.style.display='none';
+  $('introPortraitImg').src = INTRO_PORTRAIT_SRC;
+  txt.textContent='';
+
+  introScript = INTRO_SCRIPT;
+  introIndex = 0;
+
+  clearTimeout(introTimer);
+  // 0.4s 后显示“第一天”
+  introTimer=setTimeout(()=>{
+    day.classList.add('show');
+    // 1.8s 后“第一天”淡出，开始执行剧本
+    introTimer=setTimeout(()=>{
+      day.classList.add('hide');
+      advanceIntro();
+    }, 1600);
+  }, 400);
+}
+
+// 执行下一条剧本指令；遇到 say 停下等点击
+function advanceIntro(){
+  if(introIndex >= introScript.length){ endIntro(); return; }
+  const cmd = introScript[introIndex++];
+  const bg=$('introBg'), dlg=$('introDialog'), black=$('introBlack'), scr=$('screen-intro');
+
+  if(cmd.bg){
+    bg.style.backgroundImage = "url('"+cmd.bg+"')";
+    bg.classList.add('show');
+    introTimer=setTimeout(advanceIntro, 400);   // 等淡入一点继续
+    return;
+  }
+  if(cmd.black === 'on'){
+    black.classList.add('on');
+    introTimer=setTimeout(advanceIntro, 380);
+    return;
+  }
+  if(cmd.black === 'off'){
+    black.classList.remove('on');
+    introTimer=setTimeout(advanceIntro, 380);
+    return;
+  }
+    if(cmd.shake){
+    scr.classList.remove('shake');
+    void scr.offsetWidth;              // 重启动画
+    scr.classList.add('shake');
+    introTimer=setTimeout(()=>{ scr.classList.remove('shake'); advanceIntro(); }, 1250); // 缓慢两下约1.2s
+    return;
+  }
+  if(cmd.wait){
+    introTimer=setTimeout(advanceIntro, cmd.wait);
+    return;
+  }
+    if(cmd.hideDialog){
+    dlg.classList.remove('show','has-portrait');
+    $('introPortrait').classList.remove('show');
+    $('introText').textContent='';        // 清空上一句，避免切场景时残留闪现
+    $('introName').textContent='';
+    $('introName').style.display='none';
+    introTimer=setTimeout(advanceIntro, 260);
+    return;
+  }
+  if(cmd.showDialog){
+    dlg.classList.add('show');
+    introTimer=setTimeout(advanceIntro, 400);
+    return;
+  }
+    if(cmd.say !== undefined){
+    if(!dlg.classList.contains('show')) dlg.classList.add('show');
+    introWaiting = true;
+    // 约定：以 * 开头的文本表示“动作”，放进无名字对话框
+    let name = cmd.say, text = cmd.text;
+    if(typeof text==='string' && text.charAt(0)==='*'){
+      text = text.slice(1).trim();
+      name = '';
+    }
+        introSay(name, text);
+    return;   // 等点击
+  }
+    if(cmd.choice){
+    // 弹选项：对话框下掉（隐藏），选项卡片居中显示
+    dlg.classList.remove('show','has-portrait');
+    $('introPortrait').classList.remove('show');
+    const box=$('introChoices');
+    box.innerHTML = cmd.choice.map((c,i)=>
+      '<button class="intro-choice" onclick="event.stopPropagation();introChoose('+i+')">'+
+        '<span class="ic-num">'+(i+1)+'</span>'+esc(c.text)+'</button>').join('');
+    box.classList.add('show');
+    introWaiting = true;           // 选项状态下，点击空白处不推进
+    introChoicePending = cmd.choice;
+    return;
+  }
+  if(cmd.end){
+    endIntro();                    // 正常结束，进入游戏
+    return;
+  }
+  if(cmd.ending){
+    // 触发结局（例如跑路迷失）
+    introEnding = cmd.ending;
+    endIntroToEnding(cmd.ending);
+    return;
+  }
+  // 未知指令：直接继续
+  advanceIntro();
+}
+
+// 选项点击：切换到对应分支
+function introChoose(i){
+  if(!introChoicePending) return;
+  const c = introChoicePending[i];
+  if(!c) return;
+  $('introChoices').classList.remove('show');
+  $('introChoices').innerHTML='';
+  introChoicePending = null;
+  introWaiting = false;
+  const branch = ({ stay: INTRO_STAY, run: INTRO_RUN })[c.branch];
+  if(branch){
+    introScript = branch;
+    introIndex = 0;
+    advanceIntro();
+  } else {
+    endIntro();
+  }
+}
+
+// 跑路等直接进入结局：先清场，展示结局画面
+function endIntroToEnding(key){
+  clearInterval(introTyping);
+  clearTimeout(introTimer);
+  const def = ENDING_DEFS[key] || ENDING_DEFS.insufficient;
+  // 视作游戏内结局：初始化状态后展示
+  initGame();
+  showEnding(def);
+}
+
+// 点击推进：打字中→补全；已打完→下一条
+function advanceIntroClick(){
+  if(introChoicePending) return;   // 正在选择，点击空白处不推进
+  if(introWaiting){
+    if(!introDone){
+      // 补全当前句
+      if(typeof introFullText==='string'){ clearInterval(introTyping); $('introText').textContent=introFullText; introDone=true; }
+      return;
+    }
+    // 已打完 → 执行下一条
+    introWaiting=false;
+    advanceIntro();
+  }
+}
+
+// 开场结束 → 进入游戏
+function endIntro(){
+  clearInterval(introTyping);
+  clearTimeout(introTimer);
+  showScreen('screen-chat');
+  enterNight(1);
+}
+
+/* 统一“谁说话”的排版：
+   - 说话人是「许赎」（目前唯一有立绘的角色）→ 显示右下角小立绘 + 文字右侧让位
+   - 其他人 / 旁白 → 不显示立绘，文字占满全宽 */
+const INTRO_PORTRAIT_SRC = 'img/avt/avt18_keeper_evening_prayer.png';
+const INTRO_PORTRAIT_SPEAKERS = { '许赎': true };
+function introSay(name, text){
+  const port=$('introPortrait'), dlg=$('introDialog'), nm=$('introName');
+  const hasPortrait = !!INTRO_PORTRAIT_SPEAKERS[name];
+  nm.textContent = name || '';
+  // 旁白（无人名）时隐藏名字牌
+  nm.style.display = name ? '' : 'none';
+  if(hasPortrait){
+    $('introPortraitImg').src = INTRO_PORTRAIT_SRC;
+    port.classList.add('show');
+    dlg.classList.add('has-portrait');
+  } else {
+    port.classList.remove('show');
+    dlg.classList.remove('has-portrait');
+  }
+  typeIntroText(text);
+}
+
+// 逐字打字效果
+let introTyping=null;
+let introDone=false;   // 当前台词是否已打完
+let introFullText='';  // 当前台词完整文本（供点击补全）
+function typeIntroText(full){
+  const txt=$('introText');
+  clearInterval(introTyping);
+  introDone=false;
+  introFullText = full;
+  txt.textContent='';
+  let i=0;
+    introTyping=setInterval(()=>{
+    txt.textContent = full.slice(0, ++i);
+    if(i>=full.length){ clearInterval(introTyping); introDone=true; }
+  }, 90);
+}
+
+// 进入某夜
+function enterNight(n){
+  state.night=n;
+  state.ap=state.maxAp;
+  state.clock = 18 + (n-1)*3;   // 第一夜18点，之后每夜+3小时
+  state.keyTalks=0;
+  state.vnDone={};
+  state.pmSeen={};
+  state.confessSeen={};
+  state.nightResult=null;
+  setupNightPM(n);
+  $('nightLabel').textContent = '第'+['','一','二','三','四','五'][n]+'夜';
+  toastStat();
+  switchPage('page-home');
+}
+
+// 每夜可私聊对象
+function setupNightPM(n){
+  state.pendingPM={};
+  if(n===1){ ['helen','joseph','samuel','mary'].forEach(k=>state.pendingPM[k]=true); }
+  if(n===2){ ['agnes','margaret','philip'].forEach(k=>state.pendingPM[k]=true); }
+  if(n===3){ ['theresa','priest','johndoe'].forEach(k=>state.pendingPM[k]=true); if(isAlive('peter')) state.pendingPM['peter']=true; }
+  if(n===4){ ['helen','philip'].forEach(k=>state.pendingPM[k]=true); if(isAlive('theresa')) state.pendingPM['theresa']=true; }
+}/* ============================================================ 页面切换 */
+function switchPage(id){
+  // 离开主页时收起任何打开的应用覆盖层
+  document.querySelectorAll('#page-home .app-screen').forEach(a=>a.classList.remove('active'));
+  document.querySelectorAll('#pageWrap .page').forEach(p=>p.classList.toggle('active', p.id===id));
+  document.querySelectorAll('#nav .nav-btn').forEach(b=>b.classList.toggle('on', b.dataset.target===id));
+  if(id==='page-msgs') renderMsgList();
+  if(id==='page-actions') renderActions();
+  if(id==='page-exile') renderExile();
+  if(id==='page-home') renderHome();
+}
+
+/* ============================================================ 讯息列表 */
+function renderMsgList(){
+  const wrap=$('msgList'); if(!wrap) return;
+  let html='';
+  // 群聊
+  const unread = !state.groupRead[state.night];
+  html += '<div class="msg-item" onclick="openGroupChat()">' +
+    '<img class="mi-ava group" src="'+IMG.avt.group+'" alt="" onerror="this.style.visibility=\'hidden\'">' +
+    '<div class="mi-body"><div class="mi-name">晚祷群</div>' +
+    '<div class="mi-last">'+ (GROUP_SCRIPT[state.night]?esc(lastGroupText()):'暂无线索') +'</div></div>' +
+    (unread?'<div class="mi-dot">'+(GROUP_SCRIPT[state.night]?GROUP_SCRIPT[state.night].length:0)+'</div>':'') +
+    '</div>';
+  // 私聊
+  Object.keys(state.pendingPM).forEach(k=>{
+    if(!isAlive(k) && k!=='helen' && k!=='philip') return;
+    const c=CHARS[k]; if(!c) return;
+    const sc=PM_SCRIPT[state.night] && PM_SCRIPT[state.night][k];
+    if(!sc) return;
+    const unreadPM = !state.pmSeen[state.night+'_'+k];
+    html += '<div class="msg-item" onclick="openPM(\''+k+'\')">' +
+      '<img class="mi-ava" src="'+c.ava+'" alt="" onerror="this.style.visibility=\'hidden\'">' +
+      '<div class="mi-body"><div class="mi-name">'+esc(c.name)+'</div>' +
+      '<div class="mi-last">'+esc(sc.open[0].text) .slice(0,28) +'…</div></div>' +
+      (unreadPM?'<div class="mi-dot">1</div>':'') +
+      '</div>';
+  });
+  wrap.innerHTML=html;
+}
+
+function lastGroupText(){
+  const arr=GROUP_SCRIPT[state.night];
+  if(!arr||!arr.length) return '';
+  return arr[arr.length-1].text;
+}
+
+let chatMode=null;   // 'group' | 'pm' | 'confess'
+let chatWho=null;
+
+function openGroupChat(){
+  chatMode='group'; chatWho=null;
+  state.groupRead[state.night]=true;
+  $('cdAva').src=IMG.avt.group; $('cdAva').style.visibility='visible';
+  $('cdName').textContent='晚祷群';
+  $('cdSub').textContent='第'+['','一','二','三','四','五'][state.night]+'夜 · '+'共 '+GROUP_SCRIPT[state.night].length+' 条';
+  renderChatBody();
+  renderChatInput();
+  showScreen('screen-chatdetail');
+  renderMsgList();
+}
+
+function openPM(k){
+  chatMode='pm'; chatWho=k;
+  state.pmSeen[state.night+'_'+k]=true;
+  const c=CHARS[k];
+  $('cdAva').src=c.ava; $('cdAva').style.visibility='visible';
+  $('cdName').textContent=c.name;
+  $('cdSub').textContent=c.role;
+  renderChatBody();
+  renderChatInput();
+  showScreen('screen-chatdetail');
+  renderMsgList();
+}
+
+function openConfess(){
+  chatMode='confess'; chatWho=null;
+  state.confessSeen[state.night]=true;
+  $('cdAva').src=IMG.avt.confession; $('cdAva').style.visibility='visible';
+  $('cdName').textContent='匿名告解墙';
+  $('cdSub').textContent='第'+['','一','二','三','四','五'][state.night]+'夜 · 匿名';
+  renderChatBody();
+  renderChatInput();
+  showScreen('screen-chatdetail');
+  renderMsgList();
+}
+
+function closeChatDetail(){
+  showScreen('screen-chat');
+}/* ============================================================ 聊天正文 */
+function renderChatBody(){
+  const body=$('chatBody'); if(!body) return;
+  let html='';
+  if(chatMode==='group'){
+    (GROUP_SCRIPT[state.night]||[]).forEach(m=>{
+      html += bubbleFor(m.speaker, m.text, m.drawing);
+    });
+  } else if(chatMode==='pm'){
+    const sc=PM_SCRIPT[state.night] && PM_SCRIPT[state.night][chatWho];
+    if(sc){
+      sc.open.forEach(o=>{ html += bubbleFor(chatWho, o.text); });
+      // 已回复的内容
+      if(state.flags['pm_reply_'+chatWho+'_'+state.night]){
+        html += '<div class="msg right"><div class="bubble">'+esc(state.flags['pm_reply_'+chatWho+'_'+state.night])+'</div></div>';
+        html += bubbleFor(chatWho, state.flags['pm_replytext_'+chatWho+'_'+state.night] || '……');
+      }
+    }
+  } else if(chatMode==='confess'){
+    (CONFESS_POSTS[state.night]||[]).forEach(t=>{
+      html += '<div class="msg left"><div class="bubble"><span style="color:#c86ad0;">—— 匿名</span><br>'+esc(t)+'</div></div>';
+    });
+  }
+  body.innerHTML=html;
+  body.scrollTop=body.scrollHeight;
+}
+
+function bubbleFor(key, text, drawing){
+  const c=CHARS[key];
+  if(!c) return '<div class="msg sys"><div class="bubble">'+esc(text)+'</div></div>';
+  if(key==='system') return '<div class="msg sys"><div class="bubble">'+esc(text)+'</div></div>';
+  let inner = '';
+  if(drawing){ inner = '<img src="'+esc(text)+'" alt="画">'; }
+  else inner = esc(text);
+  return '<div class="msg left'+(drawing?' drawing':'')+'">' +
+    '<img class="ava" src="'+c.ava+'" alt="" onerror="this.style.visibility=\'hidden\'">' +
+    '<div><div class="mname">'+esc(c.name)+'</div><div class="bubble">'+inner+'</div></div></div>';
+}
+
+/* ============================================================ 输入/触发区 */
+function renderChatInput(){
+  const box=$('chatInput'); if(!box) return;
+  if(chatMode==='confess'){
+    box.innerHTML='<div class="chat-note">告解墙是匿名的。你只能看。</div>';
+    return;
+  }
+  if(chatMode==='group'){
+    // 群聊触发点
+    const trgs = [
+      {txt:'公开回复', cost:1, fn:'actGroupReply()'}
+    ];
+    // 若有可私聊对象，给个提示
+    box.innerHTML = '<div class="trigger-list">' +
+      trgs.map(t=>'<button class="trg'+(t.free?' free':'')+'" onclick="'+t.fn+'"'+(state.ap<t.cost?' disabled':'')+'>' +
+        '<span class="trg-txt">'+t.txt+'</span><span class="cost">'+(t.free?'免费':'-'+t.cost+' 行动点')+'</span></button>').join('') +
+      '</div>';
+    return;
+  }
+  if(chatMode==='pm'){
+    const sc=PM_SCRIPT[state.night] && PM_SCRIPT[state.night][chatWho];
+    if(!sc){ box.innerHTML=''; return; }
+    if(state.flags['pm_reply_'+chatWho+'_'+state.night]){
+      box.innerHTML='<div class="chat-note">对话已结束。</div>';
+      return;
+    }
+    const cost = 1;
+    let html='<div class="choices">';
+    sc.choices.forEach((ch,i)=>{
+      html += '<button class="choice" onclick="choosePM('+i+')"'+(state.ap<cost?' disabled':'')+'>'+esc(ch.text)+'</button>';
+    });
+    html+='</div>';
+    box.innerHTML=html;
+  }
+}
+
+// 消耗行动点
+function spendAP(n){
+  if(state.ap < n){ showToast('行动点不足'); return false; }
+  state.ap -= n; toastStat(); return true;
+}
+
+// 群聊公开回复（简化：给个通用回复并推进）
+function actGroupReply(){
+  if(!spendAP(1)) return;
+  const body=$('chatBody');
+  body.insertAdjacentHTML('beforeend','<div class="msg right"><div class="bubble">〔你的公开回复·待填〕</div></div>');
+  body.scrollTop=body.scrollHeight;
+  showToast('已公开回复');
+}
+
+// 私聊选择
+function choosePM(idx){
+  const sc=PM_SCRIPT[state.night] && PM_SCRIPT[state.night][chatWho];
+  if(!sc) return;
+  const ch=sc.choices[idx];
+  if(!spendAP(1)) return;
+  state.flags['pm_reply_'+chatWho+'_'+state.night]=ch.text;
+  state.flags['pm_replytext_'+chatWho+'_'+state.night]=ch.reply;
+  applyEffect(ch.effect);
+  renderChatBody();
+  renderChatInput();
+  renderMsgList();
+}
+
+// 应用效果
+function applyEffect(eff){
+  if(!eff) return;
+  if(eff.slip) addSlip(eff.slip);
+  if(eff.favor && chatWho) addFavor(chatWho==='helen'||chatWho==='philip'?chatWho:'philip', eff.favor);
+  if(eff.ev) giveEv(eff.ev);
+  if(eff.flag) state.flags[eff.flag]=true;
+}/* ============================================================ 行动页 */
+function renderActions(){
+  renderSceneGrid();
+  renderEvidence();
+}
+
+// 每夜 VN 场景 + 告解墙（场景卡片用对应 BG 做底图）
+function renderSceneGrid(){
+  const grid=$('sceneGrid'); if(!grid) return;
+  const n=state.night;
+  let html='';
+  // 主 VN 场景（用该场景的 BG 做底图）
+  const vs=VN_SCENES[n];
+  if(vs){
+    const done=state.vnDone[n];
+    const cls = done ? 'done' : 'current';
+    const cost = done ? '已完成' : '2';
+    const sub = done ? '已搜查' : '搜查';
+    html += '<div class="scene-card '+cls+'" style="'+sceneBg(vs.bg)+'" onclick="'+(done?'':'openVNScene('+n+')')+'">' +
+      '<span class="sc-cost'+(done?' free':'')+'">'+cost+'</span>' +
+      '<div class="sc-name">'+esc(vs.name)+'</div>' +
+      '<div class="sc-sub">'+sub+'</div>' +
+      sceneIcon() + '</div>';
+  }
+  // 告解墙（免费场景，用教堂大厅/办公室图做底）
+  const hasC=CONFESS_POSTS[n];
+  const lit = hasC && !state.confessSeen[n];
+  html += '<div class="scene-card visit'+(lit?' lit':'')+'" style="'+sceneBg(IMG.bg.office)+'" onclick="openConfessFromAction()">' +
+    '<span class="sc-dot"></span>' +
+    '<span class="sc-cost free">免费</span>' +
+    '<div class="sc-name">告解墙</div>' +
+    '<div class="sc-sub">匿名低语</div>' + sceneIcon() + '</div>';
+  // 未来夜占位
+  for(let k=n+1;k<=4;k++){
+    html += '<div class="scene-card locked"><div class="sc-name">？</div></div>';
+  }
+  grid.innerHTML=html;
+}
+
+// 生成场景卡片底图样式（叠一层暗色遮罩保证文字可读）
+function sceneBg(url){
+  return "background-image:linear-gradient(160deg,rgba(10,10,14,.58),rgba(10,10,14,.82)),url('"+url+"');background-size:cover;background-position:center;";
+}
+
+function sceneIcon(){
+  return '<svg class="sc-icon" viewBox="0 0 24 24"><path d="M4 20V9l8-5 8 5v11"/><path d="M9 20v-6h6v6"/></svg>';
+}
+
+function openConfessFromAction(){
+  openConfess();
+}
+
+function renderEvidence(){
+  const b=$('evBoard'); if(!b) return;
+  let html='';
+  Object.keys(EVIDENCE_DEFS).forEach(id=>{
+    const e=EVIDENCE_DEFS[id];
+    const held=hasEv(id);
+    const cls=e.chain==='na'?'na':e.chain;
+    html += '<div class="ev-row'+(held?' held':'')+'">' +
+      '<span class="ev-id">'+id+'</span>' +
+      '<div class="ev-body"><div class="ev-name">'+(held?esc(e.name):'？？？')+'</div>' +
+      '<div class="ev-src">'+esc(e.src)+'</div></div>' +
+      '<span class="ev-chain '+cls+'">'+(e.chain==='na'?'—':CHAINS[e.chain].label)+'</span>' +
+      '</div>';
+  });
+  b.innerHTML=html;
+}
+
+/* ============================================================ VN 场景 */
+let vnState=null;
+
+function openVNScene(n){
+  if(!spendAP(2)) return;
+  const vs=VN_SCENES[n]; if(!vs) return;
+  vnState={ night:n, picked:{} };
+  $('vnBg').style.backgroundImage='url(\''+vs.bg+'\')';
+  $('vnCg').style.backgroundImage = vs.cg ? 'url(\''+vs.cg+'\')' : '';
+  $('vnCg').classList.remove('show');
+  $('vnChapter').textContent=vs.title;
+  $('vnCharName').textContent='现场';
+  $('vnText').textContent=vs.intro;
+  $('vnEmote').classList.remove('show');
+  renderVNExtra();
+  showScreen('screen-vn');
+}
+
+function renderVNExtra(){
+  const ex=$('vnExtra'); if(!ex||!vnState) return;
+  const vs=VN_SCENES[vnState.night];
+  let html='';
+  if(vs.cg){
+    html += '<div style="margin-top:10px;"><button class="vn-choice" onclick="toggleVNCG()" style="display:inline-block;width:auto;">查看现场照片 / 画面</button></div>';
+  }
+  html += '<div class="vn-searches">';
+  vs.searches.forEach((s,i)=>{
+    const picked=vnState.picked[i];
+    html += '<button class="vn-search'+(picked?' picked':'')+'" onclick="vnSearch('+i+')">' +
+      '<div><div>'+esc(s.label)+'</div><div class="vs-note">'+esc(s.note)+'</div></div>' +
+      (picked?'<span class="vs-ev">✓</span>':'') + '</button>';
+  });
+  html += '</div>';
+  // 完成按钮
+  const any = Object.keys(vnState.picked).length;
+  html += '<div class="vn-choices"><button class="vn-choice" onclick="vnFinish()" style="background:rgba(200,120,90,.25);">完成搜查'+(any?'（已查 '+any+' 处）':'')+'</button></div>';
+  ex.innerHTML=html;
+}
+
+function toggleVNCG(){
+  $('vnCg').classList.toggle('show');
+}
+
+function vnSearch(i){
+  if(!vnState) return;
+  const vs=VN_SCENES[vnState.night];
+  const s=vs.searches[i];
+  if(!s) return;
+  vnState.picked[i]=true;
+  if(s.ev) giveEv(s.ev);
+  renderVNExtra();
+  if(s.ev){ showToast('线索：'+EVIDENCE_DEFS[s.ev].name); }
+  else { showToast(s.note||'查看了现场'); }
+}
+
+function vnFinish(){
+  if(!vnState) return;
+  state.vnDone[vnState.night]=true;
+  exitVN();
+  switchPage('page-actions');
+}
+
+function exitVN(){
+  showScreen('screen-chat');
+  switchPage('page-actions');
+}/* ============================================================ 放逐页 */
+let exileSel=null;
+let exileMode='exile';
+
+function setExileMode(m){
+  exileMode=m;
+  $('modeExile').classList.toggle('on', m==='exile');
+  $('modeSpare').classList.toggle('on', m==='spare');
+  $('exileGo').textContent = m==='exile' ? '确 认 放 逐' : '确 认 放 过';
+  renderExile();
+}
+
+function renderExile(){
+  const list=$('exileList'); if(!list) return;
+  const n=state.night;
+  if(n===5){ list.innerHTML='<div style="color:#8a8794;text-align:center;padding:30px;">最后一夜不放逐。去大厅指认。</div>'; $('exileGo').disabled=true; return; }
+  let pool=CANDIDATE_POOL[n]||[];
+  let html='';
+  pool.forEach(k=>{
+    if(!isAlive(k)) return;
+    const c=CHARS[k]; if(!c) return;
+    if(exileMode==='spare'){ html += ''; return; } // 放过模式不需要列表
+    const sel = exileSel===k;
+    html += '<div class="exile-card'+(sel?' sel':'')+'" onclick="pickExile(\''+k+'\')">' +
+      '<img class="eava" src="'+c.ava+'" alt="" onerror="this.style.visibility=\'hidden\'">' +
+      '<div style="flex:1;"><div class="ename">'+esc(c.name)+'</div><div class="erole">'+esc(c.role)+'</div></div></div>';
+  });
+  if(exileMode==='spare'){ html='<div style="color:#8a8794;text-align:center;padding:24px;font-size:12.5px;line-height:1.8;">选择「放过」：今夜不放逐任何人。<br>但凶手不会停手……</div>'; }
+  list.innerHTML=html;
+  $('exileGo').disabled = (exileMode==='exile' && !exileSel);
+}
+
+function pickExile(k){
+  exileSel = (exileSel===k)? null : k;
+  renderExile();
+}
+
+function confirmExile(){
+  const n=state.night;
+  if(exileMode==='exile' && !exileSel){ showToast('请选择要放逐的人'); return; }
+  // 计算本夜结算
+  const res = computeNightResult(n, exileMode==='exile'?exileSel:null);
+  state.nightResult=res;
+  if(exileMode==='exile' && exileSel){
+    state.flags['exiled_'+n+'_'+exileSel]=true;
+    if(!state.exiled.includes(exileSel)) state.exiled.push(exileSel);
+    state.alive[exileSel]=false;
+  }
+  // 处理死者
+  if(res.dead && !state.dead.includes(res.dead)) state.dead.push(res.dead);
+  if(res.dead) state.alive[res.dead]=false;
+  if(res.injured) state.flags['injured_'+res.injured]=true;
+  switchPage('page-home');
+}
+
+// 计算某夜结算
+function computeNightResult(n, exiledKey){
+  const base=NIGHT_BASE[n]||{dead:null,injured:null};
+  let dead=base.dead || null;
+  let injured=base.injured || null;
+  let cause='';
+  // 放逐错后因果替换
+  if(exiledKey){
+    const sub=(NIGHT_SUBSTITUTE[n]||{})[exiledKey];
+    if(sub && isAlive(sub)){ dead=sub; cause='你放逐了'+CHARS[exiledKey].name+'，凶手转而杀了'+CHARS[sub].name+'。'; }
+  }
+  // 第四夜特殊：放逐神父 → 特蕾莎杀最后一人
+  if(n===4 && exiledKey==='priest'){
+    const last = RESIDENTS.find(k=>isAlive(k) && k!=='theresa' && k!=='priest');
+    if(last){ dead=last; cause='神父被放逐，特蕾莎杀了最后一人。'; }
+  }
+  return { night:n, dead, injured, cause, exiled:exiledKey, mode:exileMode };
+}/* ============================================================ 主页 */
+// 应用图标定义（3×2）
+const HOME_APPS = [
+  { id:'memo',     name:'备忘录', cls:'memo',     icon:'<svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>' },
+  { id:'settings', name:'设置',   cls:'settings', icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>' },
+  { id:'album',    name:'相册',   cls:'album',    icon:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="8.5" cy="10" r="1.5"/><path d="M21 16l-5-5-6 6-3-3-4 4"/></svg>' },
+  { id:'phone',    name:'电话',   cls:'phone',    icon:'<svg viewBox="0 0 24 24"><path d="M5 4h3l2 5-2 1a11 11 0 0 0 5 5l1-2 5 2v3a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg>' },
+  { id:'wechat',   name:'微信',   cls:'wechat',   icon:'<svg viewBox="0 0 24 24"><path d="M9 4C5.5 4 3 6.3 3 9.2c0 1.7.9 3.2 2.4 4.2L5 16l2.6-1.3c.9.3 1.9.5 2.9.5"/><path d="M21 14.5c0-2.5-2.2-4.5-5-4.5s-5 2-5 4.5 2.2 4.5 5 4.5c.7 0 1.4-.1 2-.3L20 20l-.4-2.2C20.4 16.9 21 15.8 21 14.5z"/></svg>' },
+  { id:'wallet',   name:'钱包',   cls:'wallet',   icon:'<svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/><circle cx="17" cy="14.5" r="1.3"/></svg>' }
+];
+
+function renderHome(){
+  // 时间：18 点起，每过一夜 +? 仍固定显示当前 clock
+  const hh = String(state.clock % 24).padStart(2,'0');
+  if($('phClock')) $('phClock').textContent = hh+':00';
+  if($('phDate')) $('phDate').textContent = '第'+['','一','二','三','四','五'][state.night]+'夜 · 暴风雪';
+  if($('setNight')) $('setNight').textContent = '第'+['','一','二','三','四','五'][state.night]+'夜';
+  if($('phoneNum')) $('phoneNum').textContent = '';
+
+  // 结算通知条（有结算时显示简讯）
+  const nw = $('phNoticeWrap');
+  if(nw){
+    const res = state.nightResult;
+    if(res){
+      const deadChar = res.dead ? CHARS[res.dead] : null;
+      const injChar  = res.injured ? CHARS[res.injured] : null;
+      let txt = '';
+      if(deadChar) txt = '<b>'+esc(deadChar.name)+'</b> 死了。'+(res.cause?esc(res.cause):'');
+      else if(injChar) txt = '<b>'+esc(injChar.name)+'</b> 受了伤。';
+      else txt = '这一夜，暂时平静。';
+      const btnTxt = (state.night>=4) ? '进入指认' : '下一夜 ›';
+      nw.innerHTML = '<div class="ph-notice" style="flex-direction:column;gap:8px;">'+
+        '<div style="display:flex;gap:8px;align-items:flex-start;"><span>🔔</span><span>'+txt+'</span></div>'+
+        '<button class="result-btn" style="padding:9px;font-size:12.5px;letter-spacing:2px;" onclick="nextNight()">'+btnTxt+'</button>'+
+        '</div>';
+    } else {
+      nw.innerHTML = '';
+    }
+  }
+
+  // 应用网格
+  const grid = $('phGrid');
+  if(grid){
+    grid.innerHTML = HOME_APPS.map(app=>{
+      const badge = (app.id==='wechat' && !state.groupRead[state.night]) ? '<span class="app-badge">'+(GROUP_SCRIPT[state.night]?GROUP_SCRIPT[state.night].length:1)+'</span>' : '';
+      return '<button class="ph-app" onclick="openApp(\''+app.id+'\')">'+
+        '<span class="app-ic '+app.cls+'">'+app.icon+badge+'</span>'+
+        '<span class="app-nm">'+app.name+'</span></button>';
+    }).join('');
+  }
+}
+
+// 打开应用
+function openApp(id){
+  if(id==='wechat'){ switchPage('page-msgs'); return; }
+  if(id==='memo'){ renderMemoApp(); showApp('app-memo'); return; }
+  if(id==='settings'){ showApp('app-settings'); return; }
+  if(id==='album'){ showApp('app-album'); return; }
+  if(id==='phone'){ showApp('app-phone'); return; }
+  if(id==='wallet'){ openWallet(); return; }
+}
+function showApp(id){
+  document.querySelectorAll('#page-home .app-screen').forEach(a=>a.classList.toggle('active', a.id===id));
+}
+function closeApp(){
+  closeModal();
+  document.querySelectorAll('#page-home .app-screen').forEach(a=>a.classList.remove('active'));
+}
+
+// 钱包：首次进入弹出对话
+function openWallet(){
+  showApp('app-wallet');
+  if(!state.walletOpened){
+    state.walletOpened = true;
+    setTimeout(()=>{
+      openModal(
+        '<div class="mbody" style="padding:22px;">'+
+          '<p style="font-size:14px;line-height:1.8;color:#ece9e4;">真的很需要这份工作..</p>'+
+        '</div>'+
+        '<div class="mfoot"><button class="pri" onclick="closeModal()">知道了</button></div>'
+      );
+    }, 300);
+  }
+}
+
+// 备忘录内容（iOS 风格日记）
+const MEMOS = [
+  { t:'买菜', d:'11月3日 17:42', b:'土豆、洋葱、胡萝卜。\n玛丽说要炖汤。\n顺便带了猫粮——阁楼下面那只三花又来了。' },
+  { t:'遇见猫', d:'11月5日 21:08', b:'钟楼底下，一只橘猫蹲在雪里。\n喂了半根香肠。\n它跟着我走了两步，又停住了。\n像在等人。' },
+  { t:'修管风琴', d:'11月6日 14:30', b:'约瑟夫说第13根音管有问题。\n老本以前总专门绕开它。\n问他为什么，他只说"不吉利"。' },
+  { t:'给妈妈的信', d:'11月7日 23:15', b:'这里信号很差，电话打不出去。\n钱也不多，钱包里只剩0.5。\n但我需要这份工作。\n再撑一阵子吧。' },
+  { t:'雪', d:'11月8日 06:50', b:'雪下了一整夜。\n早祷的钟声比平时晚了两分钟。\n可能是错觉。' }
+];
+function renderMemoApp(){
+  const body=$('appMemoBody'); if(!body) return;
+  body.innerHTML = '<div class="ios-notes">'+ MEMOS.map((m,i)=>
+    '<div class="ios-note" onclick="openMemoDetail('+i+')">'+
+      '<div class="n-title">'+esc(m.t)+'</div>'+
+      '<div class="n-excerpt">'+esc(m.b.replace(/\n/g,' '))+'</div>'+
+      '<div class="n-meta">'+esc(m.d)+'</div>'+
+    '</div>').join('') + '</div>';
+}
+function openMemoDetail(i){
+  const m=MEMOS[i]; if(!m) return;
+  const body=$('appMemoBody');
+  body.innerHTML = '<div class="note-detail">'+
+    '<button class="app-back" style="margin-bottom:14px;" onclick="renderMemoApp()">‹ 备忘录</button>'+
+    '<div class="nd-title">'+esc(m.t)+'</div>'+
+    '<div class="nd-meta">'+esc(m.d)+'</div>'+
+    '<div class="nd-body">'+esc(m.b)+'</div>'+
+    '</div>';
+}
+
+function nextNight(){
+  const n=state.night;
+  if(n>=4){ // 第四夜结束 → 第五夜指认
+    state.night=5;
+    startAccusation();
+    return;
+  }
+  enterNight(n+1);
+  showHint('第'+['','一','二','三','四','五'][n+1]+'夜开始了。去「讯息」或「行动」看看。');
+}
+
+/* ============================================================ 最终指认 */
+function startAccusation(){
+  showScreen('screen-accuse');
+  $('nightLabel').textContent='第五夜';
+  renderAccuseBody();
+}
+
+function renderAccuseBody(){
+  const body=$('accuseBody'); if(!body) return;
+  let html='';
+  // 三条链状态
+  Object.keys(CHAINS).forEach(key=>{
+    const chain=CHAINS[key];
+    const held=chain.items.filter(id=>hasEv(id));
+    const complete=held.length>=2;
+    html += '<div class="chain-card'+(complete?' complete':'')+'">'+
+      '<div class="chain-head"><span class="ctitle">'+chain.label+'链</span>'+
+      '<span class="cstat '+(complete?'ok':'no')+'">'+(held.length)+'/'+chain.items.length+(complete?' 完整':' 不足')+'</span></div>'+
+      '<div class="chain-items">'+
+        chain.items.map(id=>{
+          const e=EVIDENCE_DEFS[id];
+          const h=hasEv(id);
+          return '<div class="ci'+(h?' held':'')+'"><span class="box">'+(h?'✓':'')+'</span>'+esc(e.name)+'</div>';
+        }).join('')+
+      '</div></div>';
+  });
+  // 指认对象
+  html += '<div class="act-section-title" style="margin-top:20px;">指 认 谁 <span class="ast-hint">选一个人</span></div>';
+  html += '<div class="choices" id="accuseChoices">';
+  ['theresa','priest'].forEach(k=>{
+    const c=CHARS[k];
+    html += '<button class="choice" onclick="finalizeAccusation(\''+k+'\')">'+
+      '<img src="'+c.ava+'" style="width:26px;height:26px;border-radius:8px;object-fit:cover;vertical-align:middle;margin-right:8px;" onerror="this.style.display=\'none\'">'+
+      esc(c.name)+'</button>';
+  });
+  html += '</div>';
+  body.innerHTML=html;
+}
+
+function finalizeAccusation(target){
+  const res = judgeEnding(target);
+  showEnding(res);
+}
+
+// 判定结局
+function judgeEnding(target){
+  // 坏结局优先：失言 >=5
+  if(state.slip>=5) return ENDING_DEFS.bad;
+  // 跑路 HE 优先（第四夜选了跑路）
+  if(state.flags['escape_helen']) return ENDING_DEFS.escapeHelen;
+  if(state.flags['escape_philip']) return ENDING_DEFS.escapePhilip;
+  // 指认神父 → 错
+  if(target==='priest') return ENDING_DEFS.wrong;
+  // 指认特蕾莎
+  if(target==='theresa'){
+    const chainOK = {};
+    Object.keys(CHAINS).forEach(key=>{
+      const held=CHAINS[key].items.filter(id=>hasEv(id));
+      chainOK[key]=held.length>=2;
+    });
+    const okCount=Object.values(chainOK).filter(Boolean).length;
+    const slipOK = state.slip<=2;
+    if(okCount===3 && slipOK) return ENDING_DEFS.holy;      // 三条链+失言<=2
+    if(okCount>=2) return ENDING_DEFS.pyrrhic;              // 两条链=惨胜
+    return ENDING_DEFS.insufficient;                        // 一条=不足
+  }
+  return ENDING_DEFS.insufficient;
+}/* ============================================================ 结局展示 */
+function showEnding(def){
+  state.ending=def;
+  unlockEnding(endingKeyOf(def));   // 记录已达成的结局
+  // 背景
+  showScreen('screen-accuse');
+  const body=$('accuseBody'); if(!body) return;
+  let cgHtml='';
+  if(def.cg){
+    // 图片存在性兜底：onerror 隐藏
+    cgHtml = '<div style="margin:16px 0;border-radius:16px;overflow:hidden;border:1px solid rgba(200,50,58,.3);">'+
+      '<img src="'+def.cg+'" style="width:100%;display:block;" onerror="this.parentNode.style.display=\'none\'">'+
+      '</div>';
+  }
+  body.innerHTML =
+    '<div style="text-align:center;padding:10px 0 4px;">'+
+      '<div style="font-size:10px;letter-spacing:6px;color:#e06a72;margin-bottom:12px;">'+esc(def.tag)+'</div>'+
+      '<h2 style="font-size:24px;letter-spacing:8px;margin:0;">'+esc(def.title)+'</h2>'+
+    '</div>'+
+    cgHtml+
+    '<div style="font-size:13px;line-height:2;color:#c9c6cc;padding:8px 2px;">'+esc(def.desc)+'</div>'+
+    '<div class="result-strip" style="padding:0;margin:18px 0;">'+
+      '<div><b>'+state.slip+'</b>失言</div>'+
+      '<div><b>'+Object.keys(state.evidence).length+'</b>证据</div>'+
+      '<div><b>'+state.exiled.length+'</b>放逐</div>'+
+    '</div>'+
+    '<button class="result-btn" style="margin-top:10px;" onclick="restartGame()">再 玩 一 次</button>'+
+    '<div style="height:30px;"></div>';
+  body.scrollTop=0;
+}
+
+function restartGame(){
+  initGame();
+  showScreen('screen-chat');
+  enterNight(1);
+  showHint('暴风雪又封了一次山路。这一次，别让任何人死。', null, true);
+}
+
+/* ============================================================ 弹窗 */
+function openModal(html){
+  const m=$('modalBox'); if(m) m.innerHTML=html;
+  const mask=$('modalMask'); if(mask) mask.classList.add('show');
+}
+function closeModal(){
+  const mask=$('modalMask'); if(mask) mask.classList.remove('show');
+}
+
+/* ============================================================ 启动 */
+document.addEventListener('DOMContentLoaded', function(){
+  initGame();
+  toastStat();
+    // 开场屏点击推进
+  const intro=$('screen-intro');
+  if(intro){
+    intro.addEventListener('click', function(){
+      if(!intro.classList.contains('active')) return;
+      advanceIntroClick();
+    });
+  }
+});
+</script>
+</body>
+</html>

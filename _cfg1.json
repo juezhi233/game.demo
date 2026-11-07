@@ -1,0 +1,7 @@
+{
+  "Mode": "text",
+  "Src": "_p1.html",
+  "Start": "id=\"statBar\"",
+  "End": "<div id=\"pageWrap\">",
+  "KeepEnd": true
+}
